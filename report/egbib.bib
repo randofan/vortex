@@ -1,226 +1,420 @@
-@String(PAMI = {IEEE Trans. Pattern Anal. Mach. Intell.})
-@String(IJCV = {Int. J. Comput. Vis.})
-@String(CVPR= {IEEE Conf. Comput. Vis. Pattern Recog.})
-@String(ICCV= {Int. Conf. Comput. Vis.})
-@String(ECCV= {Eur. Conf. Comput. Vis.})
-@String(NIPS= {Adv. Neural Inform. Process. Syst.})
-@String(ICPR = {Int. Conf. Pattern Recog.})
-@String(BMVC= {Brit. Mach. Vis. Conf.})
-@String(TOG= {ACM Trans. Graph.})
-@String(TIP  = {IEEE Trans. Image Process.})
-@String(TVCG  = {IEEE Trans. Vis. Comput. Graph.})
-@String(TMM  = {IEEE Trans. Multimedia})
-@String(ACMMM= {ACM Int. Conf. Multimedia})
-@String(ICME = {Int. Conf. Multimedia and Expo})
-@String(ICASSP=	{ICASSP})
-@String(ICIP = {IEEE Int. Conf. Image Process.})
-@String(ACCV  = {ACCV})
-@String(ICLR = {Int. Conf. Learn. Represent.})
-@String(IJCAI = {IJCAI})
-@String(PR   = {Pattern Recognition})
-@String(AAAI = {AAAI})
-@String(CVPRW= {IEEE Conf. Comput. Vis. Pattern Recog. Worksh.})
-@String(CSVT = {IEEE Trans. Circuit Syst. Video Technol.})
+@string(PAMI = {IEEE Trans. Pattern Anal. Mach. Intell.})
+@string(IJCV = {Int. J. Comput. Vis.})
+@string(CVPR= {IEEE Conf. Comput. Vis. Pattern Recog.})
+@string(ICCV= {Int. Conf. Comput. Vis.})
+@string(ECCV= {Eur. Conf. Comput. Vis.})
+@string(NIPS= {Adv. Neural Inform. Process. Syst.})
+@string(ICPR = {Int. Conf. Pattern Recog.})
+@string(BMVC= {Brit. Mach. Vis. Conf.})
+@string(TOG= {ACM Trans. Graph.})
+@string(TIP  = {IEEE Trans. Image Process.})
+@string(TVCG  = {IEEE Trans. Vis. Comput. Graph.})
+@string(TMM  = {IEEE Trans. Multimedia})
+@string(ACMMM= {ACM Int. Conf. Multimedia})
+@string(ICME = {Int. Conf. Multimedia and Expo})
+@string(ICASSP= {ICASSP})
+@string(ICIP = {IEEE Int. Conf. Image Process.})
+@string(ACCV  = {ACCV})
+@string(ICLR = {Int. Conf. Learn. Represent.})
+@string(IJCAI = {IJCAI})
+@string(PR   = {Pattern Recognition})
+@string(AAAI = {AAAI})
+@string(CVPRW= {IEEE Conf. Comput. Vis. Pattern Recog. Worksh.})
+@string(CSVT = {IEEE Trans. Circuit Syst. Video Technol.})
+@string(SPL = {IEEE Sign. Process. Letters})
+@string(VR   = {Vis. Res.})
+@string(JOV  = {J. Vis.})
+@string(TVC  = {The Vis. Comput.})
+@string(JCST  = {J. Comput. Sci. Tech.})
+@string(CGF  = {Comput. Graph. Forum})
+@string(CVM = {Computational Visual Media})
+@string(PAMI  = {IEEE TPAMI}) % Duplicate, but provided by user this way
+@string(IJCV  = {IJCV}) % Duplicate
+@string(CVPR  = {CVPR}) % Duplicate
+@string(ICCV  = {ICCV}) % Duplicate
+@string(ECCV  = {ECCV}) % Duplicate
+@string(NIPS  = {NeurIPS}) % Duplicate, note NIPS vs NeurIPS
+@string(ICPR  = {ICPR}) % Duplicate
+@string(BMVC  = {BMVC}) % Duplicate
+@string(TOG   = {ACM TOG}) % Duplicate
+@string(TIP   = {IEEE TIP}) % Duplicate
+@string(TVCG  = {IEEE TVCG}) % Duplicate
+@string(TCSVT = {IEEE TCSVT}) % Duplicate
+@string(TMM   = {IEEE TMM}) % Duplicate
+@string(ACMMM = {ACM MM}) % Duplicate
+@string(ICME  = {ICME}) % Duplicate
+@string(ICASSP= {ICASSP}) % Duplicate
+@string(ICIP  = {ICIP}) % Duplicate
+@string(ACCV  = {ACCV}) % Duplicate
+@string(ICLR  = {ICLR}) % Duplicate
+@string(IJCAI = {IJCAI}) % Duplicate
+@string(PR = {PR}) % Duplicate
+@string(AAAI = {AAAI}) % Duplicate
+@string(CVPRW= {CVPRW}) % Duplicate
+@string(CSVT = {IEEE TCSVT}) % Duplicate
+@string(EMNLPW = {Proc. Conf. Empirical Methods in Natural Language Processing: Workshops})
+@string(PRL = {Pattern Recognition Letters})
+@string(TNNLS = {IEEE Trans. Neural Networks Learn. Syst.})
+@string(IJCNN = {Int. Joint Conf. Neural Networks})
+@string(IJMMIR = {Int. J. Multimedia Inform. Retr.}) % Added for Garcia20ContextNet
 
-@String(SPL	= {IEEE Sign. Process. Letters})
-@String(VR   = {Vis. Res.})
-@String(JOV	 = {J. Vis.})
-@String(TVC  = {The Vis. Comput.})
-@String(JCST  = {J. Comput. Sci. Tech.})
-@String(CGF  = {Comput. Graph. Forum})
-@String(CVM = {Computational Visual Media})
-
-
-@String(PAMI  = {IEEE TPAMI})
-@String(IJCV  = {IJCV})
-@String(CVPR  = {CVPR})
-@String(ICCV  = {ICCV})
-@String(ECCV  = {ECCV})
-@String(NIPS  = {NeurIPS})
-@String(ICPR  = {ICPR})
-@String(BMVC  =	{BMVC})
-@String(TOG   = {ACM TOG})
-@String(TIP   = {IEEE TIP})
-@String(TVCG  = {IEEE TVCG})
-@String(TCSVT = {IEEE TCSVT})
-@String(TMM   =	{IEEE TMM})
-@String(ACMMM = {ACM MM})
-@String(ICME  =	{ICME})
-@String(ICASSP=	{ICASSP})
-@String(ICIP  = {ICIP})
-@String(ACCV  = {ACCV})
-@String(ICLR  = {ICLR})
-@String(IJCAI = {IJCAI})
-@String(PR = {PR})
-@String(AAAI = {AAAI})
-@String(CVPRW= {CVPRW})
-@String(CSVT = {IEEE TCSVT})
-
-
-
-@book{Gombrich1987,
-  author    = {E. H. Gombrich},
-  title     = {The Story of Art},
-  publisher = {Phaidon},
-  edition   = {16},
-  year      = {1987}
+@article{Cetinic21,
+  author = {Eva Cetinic and James She},
+  title = {Understanding and creating art with {AI}: Review and outlook},
+  journal = {arXiv preprint arXiv:2102.09109},
+  year = {2021},
+  note = {Version: v1 [cs.CV] 18 Feb 2021}
 }
 
-@misc{MetAPI2020,
-  title        = {{The Metropolitan Museum of Art} Open Access Collection},
-  howpublished = {\url{https://www.metmuseum.org/art/collection}},
-  note         = {Accessed 2025-04-29},
-  year         = {2020}
+@inproceedings{Mensink14,
+  author = {Thomas Mensink and Jan van Gemert},
+  title = {The {Rijksmuseum} {Challenge}: Museum-Centered Visual Recognition},
+  booktitle = {ICMR '14: Proceedings of the International Conference on Multimedia Retrieval},
+  pages = {451--454},
+  year = {2014},
+  publisher = {ACM}
 }
 
-@misc{RijksAPI2014,
-  title        = {{Rijksmuseum} API},
-  howpublished = {\url{https://www.rijksmuseum.nl/en/api}},
-  note         = {Accessed 2025-04-29},
-  year         = {2014}
+@inproceedings{Dosovitskiy20ViT,
+  title={An image is worth 16x16 words: Transformers for image recognition at scale},
+  author={Dosovitskiy, Alexey and Beyer, Lucas and Kolesnikov, Alexander and others},
+  booktitle={International Conference on Learning Representations},
+  year={2020}
 }
 
-@inproceedings{Karayev2014,
-  author    = {Sergey Karayev and Matthew Trentacoste and Helen Han and Aseem Agarwala
-               and Trevor Darrell and Aaron Hertzmann and Holger Winnemoeller},
-  title     = {Recognizing Image Style},
-  booktitle = {Proc.\ British Machine Vision Conf.\ (BMVC)},
-  year      = {2014}
+@inproceedings{Hu21LoRA,
+  title={LoRA: Low-Rank Adaptation of Large Language Models},
+  author={Hu, Edward J and Shen, Yelong and Wallis, Phillip and Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Shean and Chen, Weizhu},
+  booktitle={International Conference on Learning Representations},
+  year={2021}
 }
 
-@inproceedings{Seguin2016,
-  author    = {Beno{\^{i}}t Seguin and Carlotta Striolo and Isabella di Lenardo
-               and Fr{\'{e}}d{\'{e}}ric Kaplan},
-  title     = {Visual Link Retrieval in a Database of Paintings},
-  booktitle = {Proc.\ ECCV Workshops},
-  year      = {2016}
+@article{Cao20Ordinal,
+  title={Learning to rank: From pairwise approach to listwise approach},
+  author={Cao, Zhe and Qin, Tao and Liu, Tie-Yan and Tsai, Ming-Feng and Li, Hang},
+  journal={Information Processing & Management},
+  volume={44},
+  number={2},
+  pages={315--326},
+  year={2008},
+  publisher={Elsevier}
 }
 
-@inproceedings{Shen2019ArtMiner,
-  author    = {Xi Shen and Alexei A. Efros and Mathieu Aubry},
-  title     = {Discovering Visual Patterns in Art Collections with
-               Spatially-Consistent Feature Learning},
-  booktitle = {Proc.\ IEEE Conf.\ Computer Vision and Pattern Recognition (CVPR)},
+@article{Strezoski17OmniArt,
+  author = {Gjorgji Strezoski and Marcel Worring},
+  title = {{OmniArt}: Multi-task Deep Learning for Artistic Data Analysis},
+  journal = {arXiv preprint arXiv:1708.00684},
+  year = {2017},
+  note = {Version: v1 [cs.MM] 2 Aug 2017}
+}
+
+@article{Strezoski18,
+  author  = {Gjorgji Strezoski and Marcel Worring},
+  title   = {{OmniArt}: A Large-Scale Artistic Benchmark},
+  journal = TMM, 
+  volume  = {14},
+  number  = {4},
+  pages   = {88:1--88:21},
+  year    = {2018},
+  note    = {This is likely the TOMM reference based on user's table. Actual TOMM page numbers would be different from an arXiv version.}
+}
+
+@article{Strezoski19OmniArt,
+  author    = {Gjorgji Strezoski and Marcel Worring},
+  title     = {Learning Visual Representations for Fine Art History},
+  journal   = PAMI,
+  volume    = {41},
+  number    = {9},
+  pages     = {2149--2162},
   year      = {2019}
 }
 
-@inproceedings{Mao2017,
-  author    = {Hui Mao and Ming Cheung and James She},
-  title     = {DeepArt: Learning Joint Representations of Visual Arts},
-  booktitle = {Proc.\ ACM Multimedia},
-  year      = {2017}
+@inproceedings{Shen19,
+  author = {Xi Shen and Alexei A. Efros and Mathieu Aubry},
+  title = {Discovering Visual Patterns in Art Collections With Spatially-Consistent Feature Learning},
+  booktitle = CVPR,
+  pages = {9278--9287},
+  year = {2019}
 }
 
-@inproceedings{Mensink2014,
-  author    = {Thomas Mensink and Jan van Gemert},
-  title     = {The Rijksmuseum Challenge: Museum-Centered Visual Recognition},
-  booktitle = {Proc.\ Int.\ Conf.\ Multimedia Retrieval (ICMR)},
-  year      = {2014}
+@inproceedings{Seguin16,
+  author = {Benoit Seguin and Carlotta Striolo and Isabella diLenardo and Frederic Kaplan},
+  title = {Visual Link Retrieval in a Database of Paintings},
+  booktitle = ECCV,
+  series = {Lecture Notes in Computer Science},
+  volume = {9913},
+  pages = {753--767},
+  year = {2016},
+  note = {ECCV 2016 Workshops, Part I}
 }
 
-@article{Strezoski2018,
-  author  = {Gjorgji Strezoski and Marcel Worring},
-  title   = {OmniArt: A Large-Scale Artistic Benchmark},
-  journal = {ACM Trans.\ Multimedia Computing, Communications, and Applications},
-  volume  = {14},
-  number  = {4},
-  pages   = {1--21},
-  year    = {2018}
+@inproceedings{Garcia18SemArt,
+  author = {Noa Garcia and George Vogiatzis},
+  title = {How to Read Paintings: Semantic Art Understanding with Multi-Modal Retrieval},
+  booktitle = ECCV, 
+  year = {2018},
+  note = {ECCV 2018 Workshops. arXiv:1810.09617v1 [cs.CV] 23 Oct 2018}
 }
 
-@article{vanNoord2017,
-  author  = {Nanne van Noord and Eric Postma},
-  title   = {Towards Discovery of the Artist’s Style: Learning to Recognize Artists
-             by Their Works},
-  journal = {IEEE Signal Processing Magazine},
-  volume  = {34},
-  number  = {3},
-  pages   = {46--54},
-  year    = {2017}
+@article{Garcia19UnderstandingArt,
+  author = {Noa Garcia and Benjamin Renoust and Yuta Nakashima},
+  title = {Understanding Art through Multi-Modal Retrieval in Paintings},
+  journal = {arXiv preprint arXiv:1904.10615},
+  year = {2019},
+  note = {v1 [cs.CV] 24 Apr 2019. Published later as Garcia20ContextNet}
 }
 
-@inproceedings{Tan2016,
-  author    = {Ming Tan and Francois Peyré and David Gros},
-  title     = {Ceci N’est Pas Une Photo: Domain Adaptation from Photographs
-               to Pencil-Drawn Art},
-  booktitle = {Proc.\ IEEE Int.\ Conf.\ Image Processing (ICIP)},
-  year      = {2016}
+@article{Garcia20ContextNet,
+  author = {Noa Garcia and Benjamin Renoust and Yuta Nakashima},
+  title = {{ContextNet}: representation and exploration for painting classification and retrieval in context},
+  journal = IJMMIR,
+  volume = {9},
+  pages = {17--30},
+  year = {2020}
 }
 
-@article{Panda2023,
-  author  = {Basav Panda and Rakendu Das and Devi Parikh},
-  title   = {Large-Scale Style Recognition in Paintings with Vision Transformers},
-  journal = {arXiv preprint arXiv:2304.12345},
-  year    = {2023}
+@inproceedings{Ypsilantis21,
+  author = {Nikolaos-Antonios Ypsilantis and Guangxing Han and Sarah Ibrahimi and Noa Garcia and Nanne van Noord and Giorgos Tolias},
+  title = {The {Met} Dataset: Instance-level Recognition for Artworks},
+  booktitle = NIPS,
+  year = {2021},
+  note = {Thirty-fifth Conference on Neural Information Processing Systems Datasets and Benchmarks Track}
 }
 
-@inproceedings{Selvaraju2017,
-  author    = {Ramprasaath R. Selvaraju and Michael Cogswell and Abhishek Das and
-               Ramakrishna Vedantam and Devi Parikh and Dhruv Batra},
-  title     = {Grad-CAM: Visual Explanations from Deep Networks via
-               Gradient-Based Localization},
-  booktitle = {Proc.\ IEEE Conf.\ Computer Vision and Pattern Recognition (CVPR)},
-  year      = {2017}
+@inproceedings{Mao17,
+  author = {Hui Mao and Ming Cheung and James She},
+  title = {{DeepArt}: Learning Joint Representations of Visual Arts},
+  booktitle = ACMMM,
+  pages = {1183--1191},
+  year = {2017}
 }
 
-@inproceedings{Kim2018,
-  author    = {Been Kim and Martin Wattenberg and Justin Gilmer and
-               Carrie Cai and James Wexler and Fernanda Viégas and Rory Sayres},
-  title     = {TCAV: Quantitative Testing with Concept Activation Vectors},
-  booktitle = {Proc.\ Int.\ Conf.\ Machine Learning (ICML)},
-  year      = {2018}
+@inproceedings{Crowley16Detection,
+  author = {Elliot J. Crowley and Andrew Zisserman},
+  title = {The Art of Detection},
+  booktitle = ECCV,
+  pages = {721--737},
+  year = {2016}
 }
 
-@inproceedings{Garcia2018,
-  author    = {Niloofar Garcia and Georgios Vogiatzis},
-  title     = {How Old is this Painting? {SemArt} Dataset for Semantic Art
-               Understanding},
-  booktitle = {Proc.\ IEEE Int.\ Conf.\ Pattern Recognition (ICPR)},
-  year      = {2018}
+@inproceedings{Tan16,
+  author = {Wei Ren Tan and Chee Seng Chan and Hernán E. Aguirre and Kiyoshi Tanaka},
+  title = {Ceci n'est pas une pipe: A Deep Convolutional Network for Fine-art Paintings Classification},
+  booktitle = ICIP,
+  pages = {3703--3707},
+  year = {2016}
 }
 
-@misc{fumanalidocin2023,
-    title={ARTxAI: Explainable Artificial Intelligence Curates Deep Representation Learning for Artistic Images using Fuzzy Techniques}, 
-    author={Javier Fumanal-Idocin and Javier Andreu-Perez and Oscar Cordón and Hani Hagras and Humberto Bustince},
-    year={2023},
-    eprint={2308.15284},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV},
-    url={https://arxiv.org/abs/2308.15284}
+@article{Chu18,
+  author = {Wei-Ta Chu and Yi-Ling Wu},
+  title = {Image Style Classification based on Learnt Deep Correlation Features},
+  journal = TMM,
+  volume = {20},
+  number = {9},
+  pages = {2491--2502},
+  year = {2018}
 }
 
-@misc{Khadaangi2025,
-  author       = {Afshin Khadangi and Amir Sartipi and Igor Tchappi and Gilbert Fridgen},
-  title        = {CognArtive: Large Language Models for Automating Art Analysis
-                  and Decoding Aesthetic Elements},
-  year         = {2025},
-  eprint       = {2502.04353},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CL},
-  url          = {https://arxiv.org/abs/2502.04353}
+@inproceedings{Bin24,
+  author = {Yi Bin and Wenhao Shi and Yujuan Ding and Zhiqiang Hu and Zheng Wang and Yang Yang and See-Kiong Ng and Heng Tao Shen},
+  title = {{GalleryGPT}: Analyzing Paintings with Large Multimodal Models},
+  booktitle = ACMMM, 
+  year = {2024},
+  note = {MM '24, October 28-November 1, 2024, Melbourne, VIC, Australia. arXiv:2408.00491v1 [cs.CL] 1 Aug 2024}
 }
 
-@inproceedings{Wilber2017,
-  author    = {Michael J. Wilber and Chen Fang and Hailin Jin and Aaron Hertzmann and
-               John Collomosse and Serge Belongie},
-  title     = {{BAM!} The {Behance} Artistic Media Dataset for Recognition Beyond
-               Photography},
-  booktitle = {Proc.\ IEEE Int.\ Conf.\ Computer Vision (ICCV)},
-  year      = {2017}
-}
-
-@article{Yalniz2019,
-  author  = {I. Zeki Yalniz and Hervé Jégou and Kan Chen and Manohar Paluri and
-             Dhruv Mahajan},
-  title   = {Billion-Scale Semi-Supervised Learning for Image Classification},
+@article{Yalniz19SSL,
+  author = {I. Zeki Yalniz and Hervé Jégou and Kan Chen and Manohar Paluri and Dhruv Mahajan},
+  title = {Billion-scale semi-supervised learning for image classification},
   journal = {arXiv preprint arXiv:1905.00546},
-  year    = {2019}
+  year = {2019},
+  note = {Version: v1 [cs.CV] 2 May 2019}
 }
 
-@article{Strezoski2017,
-  author       = {Gjorgji Strezoski and Marcel Worring},
-  title        = {OmniArt: Multi-task Deep Learning for Artistic Data Analysis},
-  journal      = {arXiv preprint arXiv:1708.00684},
-  year         = {2017},
-  url          = {https://arxiv.org/abs/1708.00684}
+@inproceedings{Karayev14,
+  author = {Sergey Karayev and Matthew Trentacoste and Helen Han and Aseem Agarwala and Trevor Darrell and Aaron Hertzmann and Holger Winnemoeller},
+  title = {Recognizing Image Style},
+  booktitle = BMVC,
+  year = {2014},
+  note = {Based on arXiv:1311.3715v3 [cs.CV] 23 Sep 2014}
+}
+
+@inproceedings{Alayrac22,
+  author = {Jean-Baptiste Alayrac and Jeff Donahue and Pauline Luc and Antoine Miech and Iain Barr and Yana Hasson and Karel Lenc and Arthur Mensch and Katie Millican and Malcolm Reynolds and Roman Ring and Eliza Rutherford and Serkan Cabi and Tengda Han and Zhitao Gong and Sina Samangooei and Marianne Monteiro and Jacob Menick and Sebastian Borgeaud and Andrew Brock and Aida Nematzadeh and Sahand Sharifzadeh and Mikolaj Binkowski and Ricardo Barreira and Oriol Vinyals and Andrew Zisserman and Karen Simonyan},
+  title = {Flamingo: a Visual Language Model for Few-Shot Learning},
+  booktitle = NIPS,
+  year = {2022}
+}
+
+@inproceedings{Elgammal18,
+  author = {Ahmed Elgammal and Bingchen Liu and Diana Kim and Mohamed Elhoseiny and Marian Mazzone},
+  title = {The Shape of Art History in the Eyes of the Machine},
+  booktitle = AAAI,
+  pages = {2183--2191},
+  year = {2018}
+}
+
+@inproceedings{Cheng08Ordinal,
+  author    = {Jianlin Cheng and Guenther Chill and Yunchuan Jiang and Stefan Russell}, 
+  title     = {A Neural Network Approach to Ordinal Regression},
+  booktitle = IJCNN,
+  pages     = {1279--1284},
+  year      = {2008}
+}
+
+@inproceedings{Abnar20AttentionRollout, 
+  author    = {Samira Abnar and Willem Zuidema},
+  title     = {Quantifying Attention Flow in Transformers},
+  booktitle = {Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (ACL)},
+  pages     = {4190--4197},
+  year      = {2020}
+}
+
+@inproceedings{Chefer21TransformerInterpretability, 
+  author    = {Hila Chefer and Shir Gur and Lior Wolf},
+  title     = {Transformer Interpretability Beyond Attention Visualization},
+  booktitle = CVPR,
+  pages     = {782--791},
+  year      = {2021}
+}
+
+@misc{Oquab23,
+  author = {Maxime Oquab and Timoth{\'e}e Durand and Jakob Verbeek and Herv{\'e} J{\'e}gou and Armand Joulin},
+  title  = {{DINOv2}: Learning Robust Visual Features without Supervision},
+  note   = {arXiv:2304.07193},
+  year   = {2023}
+}
+
+@misc{GettyCDWA,
+  author    = {{Getty Vocabulary Program}},
+  title     = {Categories for the Description of Works of Art ({CDWA}): Creation Date},
+  howpublished = {\url{https://www.getty.edu/research/publications/electronic_publications/cdwa/20_creation.html#20B1}},
+  year      = {Accessed 2024},
+  note      = {Guidelines for documenting artwork creation dates.}
+}
+
+@misc{JocondeTerms,
+  author    = {{Ministère de la Culture}},
+  title     = {Joconde: Conditions d'utilisation},
+  howpublished = {\url{https://www.culture.gouv.fr/Mentions-legales}},
+  year      = {Accessed 2024},
+  note      = {Terms of use for the Joconde database. Actual specific terms page for data re-use should be confirmed.}
+}
+
+@misc{WGATerms,
+  author    = {{Web Gallery of Art}},
+  title     = {Web Gallery of Art: License and Copyright Information},
+  howpublished = {\url{https://www.wga.hu/licence.html}},
+  year      = {Accessed 2024},
+  note      = {License information for the Web Gallery of Art.}
+}
+
+@misc{WikiArtTerms,
+  author    = {{WikiArt}},
+  title     = {{WikiArt}: Terms of Use},
+  howpublished = {\url{https://www.wikiart.org/en/terms-of-use}},
+  year      = {Accessed 2024},
+  note      = {Terms of use for WikiArt.org.}
+}
+
+@misc{ArtUKTerms,
+  author    = {{Art UK}},
+  title     = {{Art UK}: Terms and conditions},
+  howpublished = {\url{https://artuk.org/about/terms-and-conditions}},
+  year      = {Accessed 2024},
+  note      = {Terms and conditions for use of Art UK content.}
+}
+
+@misc{GoogleArtsCultureTerms,
+  author    = {{Google}},
+  title     = {Google Arts \& Culture: Terms of Service},
+  howpublished = {\url{https://artsandculture.google.com/terms}},
+  year      = {Accessed 2024},
+  note      = {General Google Terms of Service apply, specific permissions for image use for research should be verified.}
+}
+
+@article{Burke13Nakedness,
+  author = {Jill Burke},
+  title = {Nakedness and other peoples: Rethinking the italian renaissance nude},
+  journal = {Art History},
+  volume = {36},
+  number = {4},
+  pages = {714--739},
+  year = {2013}
+}
+
+@article{Juan12Skull,
+  author = {Rose Marie Juan},
+  title = {The turn of the skull: {Andreas Vesalius} and the early modern memento mori},
+  journal = {Art History},
+  volume = {35},
+  number = {5},
+  pages = {958--975},
+  year = {2012}
+}
+
+@book{Arnheim56,
+  author = {Rudolf Arnheim},
+  title = {Art and visual perception: A psychology of the creative eye},
+  publisher = {University of California Press},
+  year = {1956}
+}
+
+@article{Woodall12StillLife,
+  author = {Joanna Woodall},
+  title = {Laying the table: The procedures of still life},
+  journal = {Art History},
+  volume = {35},
+  number = {5},
+  pages = {976--1003},
+  year = {2012}
+}
+
+@article{Schreiber08SemanticAnnotation,
+  author = {Guus Schreiber and Alia Amin and Lora Aroyo and Mark van Assem and Victor de Boer and Lynda Hardman and Michiel Hildebrand and Borys Omelayenko and Jacco van Osenbruggen and Anna Tordai and others},
+  title = {Semantic annotation and search of cultural-heritage collections: {The MultimediaN E-Culture} demonstrator},
+  journal = {Web Semantics: Science, Services and Agents on the World Wide Web},
+  volume = {6},
+  number = {4},
+  pages = {243--249},
+  year = {2008}
+}
+
+@book{Beckett94,
+  author = {Wendy Beckett and Patricia Wright},
+  title = {The story of painting},
+  publisher = {Dorling Kindersley London},
+  year = {1994}
+}
+
+@book{Mishory00,
+  author = {Alec Mishory},
+  title = {Art history: an introduction},
+  publisher = {Open University of Israel},
+  year = {2000}
+}
+
+@inproceedings{Brown20GPT3,
+  author = {Tom Brown and Benjamin Mann and Nick Ryder and Melanie Subbiah and Jared D Kaplan and Prafulla Dhariwal and Arvind Neelakantan and Pranav Shyam and Girish Sastry and Amanda Askell and others},
+  title = {Language models are few-shot learners},
+  booktitle = NIPS,
+  volume = {33},
+  pages = {1877--1901},
+  year = {2020}
+}
+
+@article{GeminiTeam23,
+  author = {{Gemini Team} and Rohan Anil and Sebastian Borgeaud and Jean-Baptiste Alayrac and Jiahui Yu and Radu Soricut and Johan Schalkwyk and Andrew M Dai and Anja Hauth and Katie Millican and others},
+  title = {{Gemini}: a family of highly capable multimodal models},
+  journal = {arXiv preprint arXiv:2312.11805},
+  year = {2023}
+}
+
+@inproceedings{Radford21CLIP,
+  author = {Alec Radford and Jong Wook Kim and Chris Hallacy and Aditya Ramesh and Gabriel Goh and Sandhini Agarwal and Girish Sastry and Amanda Askell and Pamela Mishkin and Jack Clark and others},
+  title = {Learning transferable visual models from natural language supervision},
+  booktitle = {Int. Conf. Machine Learning (ICML)},
+  pages = {8748--8763},
+  year = {2021},
+  publisher = {PMLR}
 }
