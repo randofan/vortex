@@ -1,0 +1,174 @@
+% CVPR 2022 Paper Template
+% based on the CVPR template provided by Ming-Ming Cheng (https://github.com/MCG-NKU/CVPR_Template)
+% modified and extended by Stefan Roth (stefan.roth@NOSPAMtu-darmstadt.de)
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+\usepackage[review]{cvpr}      % To produce the REVIEW version
+%\usepackage{cvpr}              % To produce the CAMERA-READY version
+%\usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Include other packages here, before hyperref.
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, e.g. with the
+% file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete
+% ReviewTempalte.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you
+%  should be clear).
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+
+
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\cvprPaperID{*****} % *** Enter the CVPR Paper ID here
+\def\confName{CVPR}
+\def\confYear{2022}
+
+
+\begin{document}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{Interpretable Year Prediction for Post-Medieval French Paintings}
+
+\author{David Song\\
+University of Washington\\
+1410 NE Campus Parkway Seattle, WA\\
+{\tt\small davsong@uw.edu}
+% For a paper whose authors are all at the same institution,
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'',
+% just like the second author.
+% To save space, use either the email address or home page, not both
+\and
+Vibhav Peri\\
+{\tt\small vperi@uw.edu}
+}
+\maketitle
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+   The ABSTRACT is to be in fully justified italicized text, at the top of the left-hand column, below the author and affiliation information.
+   Use the word ``Abstract'' as the title, in 12-point Times, boldface type, centered relative to the column, initially capitalized.
+   The abstract is to be in 10-point, single-spaced type.
+   Leave two blank lines after the Abstract, then begin the main text.
+   Look at previous CVPR abstracts to get a feel for style and length.
+\end{abstract}
+
+%%%%%%%%% BODY TEXT
+% =========================================================
+% -------------------- 1. Introduction --------------------
+\section{Introduction}
+\label{sec:intro}
+
+Art–historical scholarship sustains collective cultural memory by tracing the evolution of artistic techniques, iconography, and sociopolitical context~\cite{Gombrich1987}. Over the last decade, large museums have accelerated the \emph{digitization} of their holdings, pairing high-resolution images with machine-readable metadata to broaden access and to stimulate computational research~\cite{MetAPI2020,RijksAPI2014}. Nevertheless, a critical portion of these digital records still lacks \textbf{precise creation dates}. Even world-renowned institutions such as the Louvre routinely catalog paintings with vague labels—e.g., ``first half of the 19$^{\text{th}}$ century’’—instead of a concrete year.\footnote{See, for example, \url{https://collections.louvre.fr/en/ark:/53355/cl010064491}.} Such imprecision hampers quantitative analyses of temporal trends and complicates provenance verification.
+
+\smallskip
+\noindent\textbf{Status quo}
+Previous computer vision work on artworks has concentrated on (i)~retrieval of visually similar paintings or shared motifs for influence mapping~\cite{Seguin2016,Shen2019ArtMiner}, (ii)~style or genre classification~\cite{Karayev2014,Panda2023}, and (iii)~artist attribution~\cite{vanNoord2017}.  Although \cite{Strezoski2017} framed the prediction \emph{year} as a subtask in the OmniArt challenge, to date, \emph{no method targets exact-year dating with interpretable evidence}.  Consequently, curators still invest substantial manual effort, often requiring years of specialist training, to narrow broad time ranges into a single year.
+
+\smallskip
+\noindent\textbf{Unique Insights.}
+We fill this gap by introducing an \emph{interpretable deep-learning framework} that:
+\begin{enumerate}[leftmargin=1.2em,label=(\arabic*)]
+    \item predicts the \textbf{precise creation year} of a painting, and
+    \item visualizes the \textbf{image regions and stylistic cues}
+          that drive the prediction, thereby enhancing scholarly trust.
+\end{enumerate}
+Focusing exclusively on post-medieval (regarded as encompassing the 15$^{\text{th}}$–20$^{\text{th}}$ centuries) French paintings mitigates geographic heterogeneity while still spanning multiple major movements (Renaissance, Baroque, Neoclassicism, Impressionism).  To construct a balanced training corpus, we curate a large set of digitized works with reliable year labels, down-sampling over-represented late-19$^{\text{th}}$ pieces to prevent temporal bias.
+
+\smallskip
+\noindent\textbf{Technical challenges.}
+Two obstacles arise. 1) Visual diversity: century-scale shifts in pigments, brushwork, and subject matter create a long-tailed feature distribution. 2) Interpretability: generic saliency methods often highlight irrelevant background pixels, providing little curatorial insight. Instead, we will embed a Grad-CAM++ head and a concept-activation analysis pipeline to identify historically meaningful motifs (e.g., Empire-style uniforms)\cite{fumanalidocin2023}.
+
+\smallskip
+\noindent\textbf{Experimental plan.}
+Because no dedicated baselines exist, we establish a new benchmark. We compare our specialist network against: (i)~OmniArt, (ii)~ImageNet-pretrained CNNs, and (iii)~Gemini~2.0, a state-of-the-art multimodal transformer-based foundational model. Evaluation metrics include mean absolute error (MAE) in years and the \% of predictions within $\pm2$ years of ground truth.
+
+\smallskip
+\noindent\textbf{Expected outcome.}
+We anticipate decreasing current period-level MAE ($\!\sim\!25$ years on OmniArt~\cite{Strezoski2017}) to single-digit year precision while providing curator-credible explanations, thus opening new avenues for automated provenance studies and temporal stylistic analysis.
+
+% =========================================================
+% -------------------- 2. Related Work --------------------
+% \section{Related Work}
+% \label{sec:related}
+
+% \subsection{Photographs vs.\ Paintings}
+
+% Most canonical vision benchmarks— ImageNet, COCO, Places—comprise photographs whose statistics differ markedly from painted art (received light, continuous tone, modern optics). Transfer learning from such datasets to artworks often yields degraded performance unless features are domain-adapted~\cite{Tan2016}.  Recent studies leverage self-supervised adaptation to bridge this gap~\cite{Shen2019ArtMiner}.
+
+% \subsection{Retrieval and Influence Discovery}
+
+% Early large-scale fine-art systems tackled \emph{visual link retrieval}, matching iconographic fragments across paintings to map artistic influence. \cite{Seguin2016} fine-tuned an AlexNet backbone to retrieve works sharing compositional templates;  \cite{Shen2019ArtMiner} introduced spatially consistent self-supervision to detect near-duplicate motifs resilient to medium changes.  While effective for provenance questions, these approaches predict no temporal metadata.
+
+% \subsection{Style, Genre, and Artist Classification}
+
+% Convolutional backbones have proven adept at style recognition. \cite{Karayev2014} first demonstrated that ImageNet features enable 25-way style classification on WikiArt. Subsequent work scaled to hundreds of artists~\cite{vanNoord2017} and incorporated multi-task heads for materials and object types (Rijksmuseum Challenge~\cite{Mensink2014}).  \cite{Strezoski2017} combined these tasks in OmniArt, reporting a 28-year MAE for period regression, but without interpretability or year-level granularity.
+
+% \subsection{Datasets for Fine-Art Analysis}
+
+% \begin{table}[t]
+% \centering
+% \footnotesize
+% \begin{tabular}{lcccl}
+% \toprule
+% \textbf{Dataset} & \textbf{\#Img} & \textbf{Labels} & \textbf{Year} & \textbf{Public}\\
+% \midrule
+% WikiArt~\cite{Karayev2014}            & 85k   & Style, artist & Yes & \checkmark\\
+% Rijks\,Chal.~\cite{Mensink2014}       & 112k  & Artist, type, material, \textbf{year} & Yes & \checkmark\\
+% OmniArt~\cite{Strezoski2017}          & 432k  & Multi-task (\textbf{year}, artist, etc.) & Yes & \checkmark\\
+% SemArt~\cite{Garcia2018}              & 21k   & Style, text   & Yes & \checkmark\\
+% Art500k~\cite{Mao2017}                & 500k  & Artist, genre & Partial & \checkmark\\
+% \bottomrule
+% \end{tabular}
+% \caption{Major publicly available fine-art datasets.  None are tailored
+% explicitly for \emph{exact-year} prediction with interpretability.}
+% \label{tab:datasets}
+% \end{table}
+
+% Table~\ref{tab:datasets} summarizes the principal
+% open datasets underpinning computational art research.
+% Although several contain year metadata, the labels are either
+% coarse (decade ranges) or used only as auxiliary regression targets,
+% leaving exact dating unsolved.
+
+% \subsection{Interpretability in Vision Models}
+
+% Interpretability methods—saliency maps, CAM variants, concept
+% activation vectors—have become standard for diagnosing CNN
+% predictions~\cite{Selvaraju2017,Kim2018}.  Lecture 8 of \emph{CS231n}~\cite{fumanalidocin2023}
+% reviews these techniques,
+% highlighting their complementary strengths:
+% pixel-wise attribution (Grad-CAM) and high-level
+% concept testing (TCAV).  Our framework integrates both to expose the
+% historic signifiers that lead to specific year predictions.
+
+% =========================================================
+
+
+
+%%%%%%%%% REFERENCES
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{egbib}
+}
+
+\end{document}

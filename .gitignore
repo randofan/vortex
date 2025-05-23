@@ -1,0 +1,14 @@
+.env
+catalog.txt
+base-joconde-extrait.csv
+*.jpg
+*.zip
+*.log
+*.synctex.gz
+*.aux
+*.bbl
+*.blg
+*.out
+*.fls
+*.fdb_latexmk
+*.brf
