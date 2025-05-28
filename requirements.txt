@@ -1,0 +1,16 @@
+torch>=2.2.1
+torchvision
+torchaudio
+timm==0.9.*
+peft==0.10.*
+coral-pytorch
+albumentations==1.4.*
+opencv-python-headless
+pandas
+requests
+pillow
+tqdm
+pytorch-lightning
+optuna==3.6.*
+accelerate
+bitsandbytes

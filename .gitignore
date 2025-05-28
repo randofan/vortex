@@ -12,3 +12,5 @@ base-joconde-extrait.csv
 *.fls
 *.fdb_latexmk
 *.brf
+*.dvi
+.vscode
