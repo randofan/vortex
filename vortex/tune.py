@@ -45,13 +45,14 @@ def objective(csv, batch, trial):
         "weight_decay": trial.suggest_float("weight_decay", 0.0, 0.2),
         "dropout": trial.suggest_float("dropout", 0.0, 0.3),
     }
-    train_ds = PaintingDataset(csv, True)
-    val_ds = PaintingDataset(csv, False)
+
+    train_ds = PaintingDataset(csv)
+    val_ds = PaintingDataset(csv)
     dl_train = DataLoader(train_ds, batch_size=batch, shuffle=True, num_workers=8)
     dl_val = DataLoader(val_ds, batch_size=batch, shuffle=False, num_workers=8)
 
     trainer = pl.Trainer(
-        max_epochs=20,
+        max_epochs=10,
         accelerator="gpu",
         devices=1,
         precision="16-mixed",
@@ -71,8 +72,9 @@ def main():
     ap.add_argument("--batch", type=int, default=32)
     args = ap.parse_args()
 
+    pruner = optuna.pruners.MedianPruner(n_startup_trials=10, n_warmup_steps=3)
     study = optuna.create_study(
-        direction="minimize", sampler=optuna.samplers.TPESampler()
+        direction="minimize", sampler=optuna.samplers.TPESampler(), pruner=pruner
     )
     study.optimize(
         lambda t: objective(args.csv, args.batch, t),
@@ -93,7 +95,7 @@ def main():
         "dropout": [best["dropout"]],
     }
     study2 = optuna.create_study(
-        direction="minimize", sampler=optuna.samplers.GridSampler(grid)
+        direction="minimize", sampler=optuna.samplers.GridSampler(grid), pruner=pruner
     )
     study2.optimize(lambda t: objective(args.csv, args.batch, t), timeout=args.timeout)
     print("Grid-search best:", study2.best_value, study2.best_params)

@@ -1,6 +1,7 @@
 import argparse
 import pytorch_lightning as pl
 import torch
+from pytorch_lightning.loggers import CSVLogger
 from torch.utils.data import DataLoader
 from .dataset import PaintingDataset
 from .model import VortexModel
@@ -52,23 +53,26 @@ def cli():
 def main():
     cfg = cli()
     dl_train = DataLoader(
-        PaintingDataset(cfg.csv, True),
+        PaintingDataset(cfg.csv),
         batch_size=cfg.batch,
         shuffle=True,
         num_workers=8,
     )
     dl_val = DataLoader(
-        PaintingDataset(cfg.csv, False),
+        PaintingDataset(cfg.csv),
         batch_size=cfg.batch,
         shuffle=False,
         num_workers=8,
     )
+
+    logger = CSVLogger("lightning_logs", name="vortex")
 
     trainer = pl.Trainer(
         max_epochs=cfg.epochs,
         accelerator="gpu",
         devices=1,
         precision="16-mixed",
+        logger=logger,
         callbacks=[pl.callbacks.EarlyStopping("val_MAE", patience=5, mode="min")],
     )
     trainer.fit(Wrapper(cfg), dl_train, dl_val)
