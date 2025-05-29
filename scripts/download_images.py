@@ -26,10 +26,11 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     seen, rows = set(), []
     df = pd.read_csv(args.csv)
+    df = df.head()
 
     for _, row in tqdm.tqdm(df.iterrows(), total=len(df)):
         try:
-            data = download(row["url"])
+            data = download(row["URL"])
             h = sha1(data)
             if h in seen:  # dedup via hash
                 continue
@@ -37,9 +38,9 @@ def main():
             fn = out / f"{h}.jpg"
             with Image.open(io.BytesIO(data)) as im:
                 im.convert("RGB").save(fn, "JPEG", quality=95)
-            rows.append({"path": str(fn), "year": int(row["year"])})
+            rows.append({"path": str(fn), "year": int(row["Year"])})
         except Exception as e:
-            tqdm.tqdm.write(f"skip {row['url']} : {e}")
+            tqdm.tqdm.write(f"skip {row['URL']} : {e}")
 
     pd.DataFrame(rows).to_csv("data/clean.csv", index=False)
 
