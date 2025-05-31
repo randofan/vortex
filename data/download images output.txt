@@ -1,0 +1,164 @@
+C:\Vibhav\CSE493 Local\vortex>python3 scripts/download_images.py --csv "data/full painting data.csv" --out images
+skip https://uploads8.wikiart.org/images/pavel-fedotov/get-married-gentlemen-that-would-come-in-very-handy.jpg : cannot identify image file <_io.BytesIO object at 0x00000209397FD1C0>
+skip https://uploads0.wikiart.org/images/giovanni-fattori/der-schindanger-in-livorno-1867.jpg : ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/000PE000001/94de15103.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BF10>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106301/90de2121.jpg : cannot identify image file <_io.BytesIO object at 0x000002093C74DF30>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106426/91ee2121.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BCE0>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106415/97de25656.jpg : cannot identify image file <_io.BytesIO object at 0x000002093C74DF30>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106456/18-543774a.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BCE0>               
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106409/95de8288.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BCE0>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106552/96-019229.jpg : cannot identify image file <_io.BytesIO object at 0x000002093C74DF30>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106364/97-009210.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BCE0>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106562/98-005854.jpg : cannot identify image file <_io.BytesIO object at 0x000002093C74DF30>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104652/p0005877-001.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B740>             
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104653/16-532010.jpg : cannot identify image file <_io.BytesIO object at 0x00000209393E0F90>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104641/87ee2395.jpg : cannot identify image file <_io.BytesIO object at 0x00000209393E0F90>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104654/16-532011.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B740>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104604/p0005748-001.jpg : cannot identify image file <_io.BytesIO object at 0x00000209393E0F90>             
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104603/90ee1839.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B740>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/000PE021633/LEMOYNE Bénigne Comeau 80.1.1.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B5B0>
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106495/18-510098.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BBA0>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106413/09-585049.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B010>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106447/97de24754.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BBA0>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106542/97de2034.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B010>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106363/97de2036.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BBA0>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106376/12-561570.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BBA0>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106530/98ce10805.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B010>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106449/94de15102.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BBA0>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104578/14-531287a.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BC90>               
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104637/87ee2597.jpg : cannot identify image file <_io.BytesIO object at 0x0000020928E3F7E0>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104638/15-527454.jpg : cannot identify image file <_io.BytesIO object at 0x0000020928E3F7E0>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104636/85de1207.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BC90>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104584/15-532340.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BC90>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104651/98de12184.jpg : cannot identify image file <_io.BytesIO object at 0x00000209393E0F90>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104620/87ee2317.jpg : cannot identify image file <_io.BytesIO object at 0x000002093C74DF30>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104614/18-501823.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B740>                
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/M0381002105/la dentellière - Tapissier Edmond.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B380>
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104650/98-016546.jpg : cannot identify image file <_io.BytesIO object at 0x000002093E62C310>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104573/90ee2108.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BBA0>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104646/08-510394.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CC35DA0>                
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/000PE000003/pl000003-001.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CC35DA0>             
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106259/89-001668.jpg : cannot identify image file <_io.BytesIO object at 0x00000209393E0F90>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106410/96de11818.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B830>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106263/11-527805.jpg : cannot identify image file <_io.BytesIO object at 0x000002093E62F510>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106272/88ee2178.jpg : cannot identify image file <_io.BytesIO object at 0x000002093E62E2A0>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106416/97de25658.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B970>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106395/98-024290.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B970>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106442/17-574680a.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BA60>               
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106569/91-002116.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CC35DA0>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106365/12-568834.jpg : cannot identify image file <_io.BytesIO object at 0x000002093E62FC90>                
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/000PE000010/97de2040.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BCE0>                 
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106408/94de15026.jpg : cannot identify image file <_io.BytesIO object at 0x000002093E62EE80>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106455/15-532328a.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B150>               
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000106446/94de15024.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B150>                
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/06220038209/m0622-2024-11-1.JPG : Image size (346875010 pixels) exceeds limit of 178956970 pixels, could be decompression bomb DOS attack.
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104615/95-017807.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B560>                
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip https://pop-perf-assets.s3.gra.io.cloud.ovh.net/joconde/00000104585/12-544351.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2B560>                
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?                                                                                              
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip nan : Invalid URL 'nan': No scheme supplied. Perhaps you meant https://nan?
+skip https://iiif.micr.io/uMWpT/full/max/0/default.jpg : cannot identify image file <_io.BytesIO object at 0x000002093CD2BEC0>                                                
+skip https://iiif.micr.io/FAKes/full/max/0/default.jpg : HTTPSConnectionPool(host='iiif.micr.io', port=443): Read timed out. (read timeout=20)
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 52457/52457 [17:19:10<00:00,  1.19s/it]

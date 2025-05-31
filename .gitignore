@@ -13,5 +13,6 @@ base-joconde-extrait.csv
 *.fdb_latexmk
 *.brf
 *.dvi
+*.tar
 .vscode
 images
