@@ -41,7 +41,9 @@ class Lit(pl.LightningModule):
     def __init__(self, cfg: dict):
         super().__init__()
         self.save_hyperparameters(cfg)
-        self.model = VortexModel(lora_r=cfg["lora_r"], dropout=cfg["dropout"])
+        self.model = VortexModel(
+            lora_r=cfg["lora_r"], lora_alpha=cfg["lora_alpha"], dropout=cfg["dropout"]
+        )
         self.lr = cfg["lr"]
         self.wd = cfg["weight_decay"]
 
@@ -77,8 +79,16 @@ def objective(csv: str, batch: int, trial: optuna.Trial) -> float:
     Returns:
         Validation MAE to minimize
     """
+    lora_r = trial.suggest_categorical("lora_r", [2, 4, 8, 16, 32])
+
+    # Research-based lora_alpha values: typically rank to 4×rank
+    # Common patterns: alpha=r, alpha=2×r, alpha=4×r
+    alpha_choices = [lora_r, 2 * lora_r, 4 * lora_r]
+    lora_alpha = trial.suggest_categorical("lora_alpha", alpha_choices)
+
     cfg = {
-        "lora_r": trial.suggest_categorical("lora_r", [2, 4, 8, 16, 32]),
+        "lora_r": lora_r,
+        "lora_alpha": lora_alpha,
         "lr": trial.suggest_loguniform("lr", 1e-5, 1e-3),
         "weight_decay": trial.suggest_float("weight_decay", 0.0, 0.2),
         "dropout": trial.suggest_float("dropout", 0.0, 0.3),
@@ -135,6 +145,7 @@ def main():
     # Phase 2: Grid search around best parameters
     grid = {
         "lora_r": [best["lora_r"]],
+        "lora_alpha": [best["lora_alpha"]],  # Keep best alpha from random search
         "lr": [best["lr"] * 0.5, best["lr"], best["lr"] * 2],
         "weight_decay": [
             max(0, best["weight_decay"] - 0.05),

@@ -11,7 +11,31 @@ import torch
 from peft import get_peft_model, LoraConfig, TaskType
 from coral_pytorch.layers import CoralLayer
 from coral_pytorch.losses import coral_loss
-from .utils import MODEL_NAME, NUM_CLASSES, get_model_embedding_size
+from .utils import MODEL_NAME, NUM_CLASSES
+
+
+def _get_model_embedding_size(model_name: str) -> int:
+    """
+    Get the embedding size for the specified model.
+
+    Args:
+        model_name: Name of the DINOv2 model
+
+    Returns:
+        int: Hidden size of the model
+    """
+    # Model-specific embedding sizes
+    embedding_sizes = {
+        "facebook/dinov2-small": 384,
+        "facebook/dinov2-base": 768,
+        "facebook/dinov2-large": 1024,
+        "facebook/dinov2-giant": 1536,
+    }
+
+    if model_name not in embedding_sizes:
+        raise ValueError(f"Unknown model: {model_name}")
+
+    return embedding_sizes[model_name]
 
 
 class VortexModel(nn.Module):
@@ -24,21 +48,24 @@ class VortexModel(nn.Module):
 
     Args:
         lora_r: LoRA rank parameter (higher = more parameters, default: 8)
+        lora_alpha: LoRA scaling parameter (default: 16, common range: rank to 4×rank)
         dropout: Dropout rate for the base model (default: 0.0)
     """
 
-    def __init__(self, lora_r: int = 8, dropout: float = 0.0):
+    def __init__(self, lora_r: int = 8, lora_alpha: int = 16, dropout: float = 0.0):
         super().__init__()
 
         # Validate parameters
         if lora_r <= 0:
             raise ValueError("LoRA rank must be positive")
+        if lora_alpha <= 0:
+            raise ValueError("LoRA alpha must be positive")
         if not 0 <= dropout < 1:
             raise ValueError("Dropout must be in [0, 1)")
 
         # Load pre-trained DINOv2 model
         vit = AutoModel.from_pretrained(MODEL_NAME)
-        emb = get_model_embedding_size()
+        emb = _get_model_embedding_size(MODEL_NAME)
 
         # CORAL layer for ordinal regression (NUM_CLASSES-1 thresholds)
         self.coral = CoralLayer(emb, NUM_CLASSES - 1)
@@ -47,7 +74,7 @@ class VortexModel(nn.Module):
         peft_cfg = LoraConfig(
             task_type=TaskType.FEATURE_EXTRACTION,
             r=lora_r,
-            lora_alpha=lora_r * 2,  # Scaling factor (common heuristic)
+            lora_alpha=lora_alpha,  # Now configurable scaling factor
             target_modules=["query", "key", "value", "dense"],  # Attention modules
         )
         self.vit = get_peft_model(vit, peft_cfg)

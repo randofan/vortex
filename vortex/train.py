@@ -55,7 +55,7 @@ class Wrapper(pl.LightningModule):
         self.save_hyperparameters(cfg)
 
         # Initialize model with configuration
-        self.model = VortexModel(lora_r=cfg.lora_r)
+        self.model = VortexModel(lora_r=cfg.lora_r, lora_alpha=cfg.lora_alpha)
         self.lr = cfg.lr
         self.wd = cfg.weight_decay
 
@@ -108,6 +108,12 @@ def cli() -> argparse.Namespace:
         help="Weight decay for regularization",
     )
     parser.add_argument("--lora_r", type=int, default=8, help="LoRA rank parameter")
+    parser.add_argument(
+        "--lora_alpha",
+        type=int,
+        default=16,
+        help="LoRA alpha scaling parameter (common: rank to 4×rank)",
+    )
     return parser.parse_args()
 
 
