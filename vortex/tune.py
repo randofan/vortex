@@ -15,24 +15,7 @@ import torch
 from torch.utils.data import DataLoader
 from .dataset import PaintingDataset
 from .model import VortexModel
-
-
-def _step(model: VortexModel, batch: tuple) -> tuple[torch.Tensor, torch.Tensor]:
-    """
-    Perform a single training/validation step.
-
-    Args:
-        model: The VortexModel instance
-        batch: Tuple of (images, year_labels)
-
-    Returns:
-        Tuple of (loss, mae) for optimization
-    """
-    x, y = batch
-    logits = model(x)
-    loss = model.coral_loss_fn(logits, y)
-    mae = (model.decode_coral(logits) - y).abs().float().mean()
-    return loss, mae
+from .utils import calculate_mae, _step  # Modified import
 
 
 class Lit(pl.LightningModule):
@@ -67,12 +50,13 @@ class Lit(pl.LightningModule):
         return {"optimizer": opt, "lr_scheduler": sch}
 
 
-def objective(csv: str, batch: int, trial: optuna.Trial) -> float:
+def objective(train_csv: str, val_csv: str, batch: int, trial: optuna.Trial) -> float:
     """
     Optuna objective function for hyperparameter optimization.
 
     Args:
-        csv: Path to dataset CSV
+        train_csv: Path to training dataset CSV
+        val_csv: Path to validation dataset CSV
         batch: Batch size
         trial: Optuna trial object
 
@@ -94,9 +78,9 @@ def objective(csv: str, batch: int, trial: optuna.Trial) -> float:
         "dropout": trial.suggest_float("dropout", 0.0, 0.3),
     }
 
-    # Create datasets (same for train/val in tuning for speed)
-    train_ds = PaintingDataset(csv)
-    val_ds = PaintingDataset(csv)
+    # Create separate datasets for training and validation
+    train_ds = PaintingDataset(train_csv)
+    val_ds = PaintingDataset(val_csv)
     dl_train = DataLoader(train_ds, batch_size=batch, shuffle=True, num_workers=8)
     dl_val = DataLoader(val_ds, batch_size=batch, shuffle=False, num_workers=8)
 
@@ -119,7 +103,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Hyperparameter tuning for VortexModel"
     )
-    parser.add_argument("--csv", required=True, help="Path to dataset CSV")
+    parser.add_argument("--train-csv", required=True, help="Path to training dataset CSV")
+    parser.add_argument("--val-csv", required=True, help="Path to validation dataset CSV")
     parser.add_argument(
         "--random-trials", type=int, default=50, help="Number of random search trials"
     )
@@ -135,7 +120,7 @@ def main():
         direction="minimize", sampler=optuna.samplers.TPESampler(), pruner=pruner
     )
     study.optimize(
-        lambda t: objective(args.csv, args.batch, t),
+        lambda t: objective(args.train_csv, args.val_csv, args.batch, t),
         n_trials=args.random_trials,
         timeout=args.timeout,
     )
@@ -157,7 +142,7 @@ def main():
     study2 = optuna.create_study(
         direction="minimize", sampler=optuna.samplers.GridSampler(grid), pruner=pruner
     )
-    study2.optimize(lambda t: objective(args.csv, args.batch, t), timeout=args.timeout)
+    study2.optimize(lambda t: objective(args.train_csv, args.val_csv, args.batch, t), timeout=args.timeout)
     print("Grid-search best:", study2.best_value, study2.best_params)
 
 

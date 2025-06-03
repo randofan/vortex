@@ -16,30 +16,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
 from .dataset import PaintingDataset
 from .model import VortexModel
-
-
-def _step(model: VortexModel, batch: tuple) -> tuple[torch.Tensor, torch.Tensor]:
-    """
-    Perform a single training/validation step.
-
-    Args:
-        model: The VortexModel instance
-        batch: Tuple of (images, year_labels)
-
-    Returns:
-        Tuple of (loss, mae) where:
-        - loss: CORAL loss for backpropagation
-        - mae: Mean Absolute Error for monitoring
-    """
-    x, y = batch
-    logits = model(x)
-    loss = model.coral_loss_fn(logits, y)
-
-    # Calculate MAE between predicted and true year offsets
-    predictions = model.decode_coral(logits)
-    mae = (predictions - y).abs().float().mean()
-
-    return loss, mae
+from .utils import calculate_mae, _step  # Modified import
 
 
 class Wrapper(pl.LightningModule):
@@ -92,7 +69,10 @@ def cli() -> argparse.Namespace:
         description="Train VortexModel for painting year prediction"
     )
     parser.add_argument(
-        "--csv", required=True, help="Path to CSV file with 'path' and 'year' columns"
+        "--train-csv", required=True, help="Path to training CSV file"
+    )
+    parser.add_argument(
+        "--val-csv", required=True, help="Path to validation CSV file"
     )
     parser.add_argument(
         "--epochs", type=int, default=30, help="Number of training epochs"
@@ -121,17 +101,16 @@ def main():
     """Main training function."""
     cfg = cli()
 
-    # Create data loaders
-    # Note: Using same dataset for train/val - should be split in practice
+    # Create separate data loaders for train and validation
     dl_train = DataLoader(
-        PaintingDataset(cfg.csv),
+        PaintingDataset(cfg.train_csv),
         batch_size=cfg.batch,
         shuffle=True,
         num_workers=8,
         pin_memory=True,  # Faster GPU transfer
     )
     dl_val = DataLoader(
-        PaintingDataset(cfg.csv),
+        PaintingDataset(cfg.val_csv),
         batch_size=cfg.batch,
         shuffle=False,
         num_workers=8,
