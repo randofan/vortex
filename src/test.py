@@ -1,231 +1,107 @@
 """
-Test evaluation script for VortexModel painting year prediction.
+Generate predictions (and optional MAE) on a held‑out CSV split using the
+fine‑tuned model.
 
-This script loads a trained model checkpoint, runs predictions on test data,
-calculates performance metrics, and saves detailed results to CSV.
+Example
+-------
+python test_coral_preds.py \
+    --checkpoint  runs/dino_lora \
+    --test_csv    splits/test.csv \
+    --out_csv     results/test_preds.csv
 
-Usage:
-    python -m vortex.test --checkpoint best.ckpt --test-csv data_splits/test.csv --output results.csv
+Writes **out_csv** with columns: `path,y_true,y_pred`.
+If the `year` column exists in the CSV, MAE is printed.
 """
 
 import argparse
-import pandas as pd
+import os
+import csv
 import torch
+from datasets import load_dataset
 from torch.utils.data import DataLoader
-from tqdm import tqdm
-from pathlib import Path
-from dataset import PaintingDataset
-from model import VortexModel
-from utils import BASE_YEAR, calculate_mae
+from transformers import default_data_collator
+from train_coral_lora import (
+    DinoV2Coral,
+    coral_logits_to_label,
+    RESIZE_SIZE,
+    processor,
+)
+from PIL import Image
+import evaluate
+
+mae_metric = evaluate.load("mae")
 
 
-@torch.no_grad()
-def predict_on_dataset(
-    model: VortexModel, test_csv: str, batch_size: int = 32, device: str = "auto"
-) -> pd.DataFrame:
-    """
-    Run model predictions on test dataset.
-
-    Args:
-        model: Trained VortexModel instance
-        test_csv: Path to test dataset CSV
-        batch_size: Batch size for inference
-        device: Device to run inference on ("auto", "cpu", "cuda")
-
-    Returns:
-        DataFrame with columns: path, year, pred_year, mae
-    """
-    # Setup device
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = model.to(device)
-    model.eval()
-
-    # Create test dataset and dataloader
-    test_dataset = PaintingDataset(test_csv)
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=4,
-        pin_memory=(device == "cuda"),
-    )
-
-    # Storage for results
-    results = []
-
-    print(f"Running predictions on {len(test_dataset)} test samples...")
-
-    for batch_idx, (images, year_offsets) in enumerate(
-        tqdm(test_loader, desc="Predicting")
-    ):
-        images = images.to(device)
-        year_offsets = year_offsets.to(device)
-
-        # Forward pass
-        logits = model(images)
-        pred_offsets = model.decode_coral(logits)
-
-        # Calculate per-sample MAE using vectorized operations
-        mae_per_sample = calculate_mae(pred_offsets, year_offsets)
-
-        # Convert to absolute years only for storage/display
-        true_years = year_offsets + BASE_YEAR
-        pred_years = pred_offsets + BASE_YEAR
-
-        # Get image paths for this batch
-        batch_start = batch_idx * batch_size
-        batch_end = min(batch_start + batch_size, len(test_dataset))
-        batch_paths = [
-            test_dataset.df.iloc[i]["path"] for i in range(batch_start, batch_end)
-        ]
-
-        # Store results using the calculated per-sample MAE
-        for i in range(len(images)):
-            results.append(
-                {
-                    "path": batch_paths[i],
-                    "year": int(true_years[i].item()),
-                    "pred_year": int(pred_years[i].item()),
-                    "mae": float(mae_per_sample[i].item()),
-                }
-            )
-
-    return pd.DataFrame(results)
-
-
-def load_model_from_checkpoint(checkpoint_path: str) -> VortexModel:
-    """
-    Load VortexModel from PyTorch Lightning checkpoint.
-
-    Args:
-        checkpoint_path: Path to .ckpt file
-
-    Returns:
-        Loaded VortexModel instance
-    """
-    try:
-        from train import Wrapper
-
-        # Load Lightning wrapper
-        wrapper = Wrapper.load_from_checkpoint(checkpoint_path)
-        return wrapper.model
-
-    except Exception as e:
-        raise RuntimeError(f"Failed to load checkpoint {checkpoint_path}: {e}")
-
-
-def calculate_metrics(results_df: pd.DataFrame) -> dict:
-    """
-    Calculate comprehensive evaluation metrics.
-
-    Args:
-        results_df: DataFrame with prediction results
-
-    Returns:
-        Dictionary of metrics
-    """
-    mae_values = results_df["mae"]
-
-    metrics = {
-        "mae_mean": float(mae_values.mean()),
-        "mae_std": float(mae_values.std()),
-        "mae_median": float(mae_values.median()),
-        "mae_min": float(mae_values.min()),
-        "mae_max": float(mae_values.max()),
-        "samples_count": len(results_df),
-        "accuracy_5yr": float((mae_values <= 5).mean() * 100),  # % within 5 years
-        "accuracy_10yr": float((mae_values <= 10).mean() * 100),  # % within 10 years
-        "accuracy_20yr": float((mae_values <= 20).mean() * 100),  # % within 20 years
-    }
-
-    return metrics
-
-
-def print_metrics(metrics: dict):
-    """Print evaluation metrics in a formatted way."""
-    print("\n" + "=" * 50)
-    print("TEST EVALUATION RESULTS")
-    print("=" * 50)
-    print(f"Total samples: {metrics['samples_count']}")
-    print(f"\nMean Absolute Error (MAE):")
-    print(f"  Mean: {metrics['mae_mean']:.2f} years")
-    print(f"  Std:  {metrics['mae_std']:.2f} years")
-    print(f"  Median: {metrics['mae_median']:.2f} years")
-    print(f"  Range: [{metrics['mae_min']:.0f}, {metrics['mae_max']:.0f}] years")
-    print(f"\nAccuracy (% within threshold):")
-    print(f"  ±5 years:  {metrics['accuracy_5yr']:.1f}%")
-    print(f"  ±10 years: {metrics['accuracy_10yr']:.1f}%")
-    print(f"  ±20 years: {metrics['accuracy_20yr']:.1f}%")
-    print("=" * 50)
+def preprocess(example):
+    img = Image.open(example["path"]).convert("RGB")
+    pv = processor(
+        img, do_resize=True, size={"shortest_edge": RESIZE_SIZE}, return_tensors="pt"
+    )["pixel_values"][0]
+    example["pixel_values"] = pv.half()
+    return example
 
 
 def main():
-    """Main test evaluation function."""
-    parser = argparse.ArgumentParser(
-        description="Evaluate trained VortexModel on test data"
-    )
-    parser.add_argument(
-        "--checkpoint",
-        required=True,
-        help="Path to PyTorch Lightning checkpoint (.ckpt file)",
-    )
-    parser.add_argument(
-        "--test-csv", required=True, help="Path to test dataset CSV file"
-    )
-    parser.add_argument("--output", required=True, help="Path to save results CSV file")
-    parser.add_argument(
-        "--batch-size", type=int, default=32, help="Batch size for inference"
-    )
-    parser.add_argument(
-        "--device",
-        default="auto",
-        choices=["auto", "cpu", "cuda"],
-        help="Device to run inference on",
-    )
-    parser.add_argument(
-        "--metrics-only",
-        action="store_true",
-        help="Only print metrics without saving detailed results",
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--checkpoint", required=True)
+    ap.add_argument("--test_csv", required=True)
+    ap.add_argument("--out_csv", required=True)
+    ap.add_argument("--batch", type=int, default=2)
+    args = ap.parse_args()
+
+    # ---------------- Load dataset ----------------
+    ds = (
+        load_dataset("csv", data_files=args.test_csv)["train"]
+        .map(preprocess)
+        .with_format("torch")
     )
 
-    args = parser.parse_args()
-
-    # Validate inputs
-    if not Path(args.checkpoint).exists():
-        raise FileNotFoundError(f"Checkpoint not found: {args.checkpoint}")
-    if not Path(args.test_csv).exists():
-        raise FileNotFoundError(f"Test CSV not found: {args.test_csv}")
-
-    # Load model
-    print(f"Loading model from {args.checkpoint}...")
-    model = load_model_from_checkpoint(args.checkpoint)
-
-    # Run predictions
-    results_df = predict_on_dataset(
-        model, args.test_csv, batch_size=args.batch_size, device=args.device
+    has_labels = "year" in ds.column_names
+    dl = DataLoader(
+        ds, batch_size=args.batch, shuffle=False, collate_fn=default_data_collator
     )
 
-    # Calculate and display metrics
-    metrics = calculate_metrics(results_df)
-    print_metrics(metrics)
+    # ---------------- Model ----------------
+    model = DinoV2Coral()
+    ckpt = torch.load(
+        os.path.join(args.checkpoint, "pytorch_model.bin"), map_location="cuda"
+    )
+    model.load_state_dict(ckpt)
+    model.eval().cuda()
 
-    # Save results
-    if not args.metrics_only:
-        # Save detailed results
-        results_df.to_csv(args.output, index=False)
-        print(f"\nDetailed results saved to: {args.output}")
+    preds = []
+    labels = []
+    paths = (
+        ds["path"]
+        if "path" in ds.column_names
+        else [f"idx_{i}" for i in range(len(ds))]
+    )
 
-        # Save metrics summary
-        metrics_path = (
-            Path(args.output).parent / f"{Path(args.output).stem}_metrics.json"
-        )
-        import json
+    with torch.no_grad():
+        for batch in dl:
+            pixel_values = batch["pixel_values"].cuda()
+            logits = model.head(
+                model.base(pixel_values=pixel_values).last_hidden_state[:, 0]
+            )
+            pred = coral_logits_to_label(logits).cpu().numpy().tolist()
+            preds.extend(pred)
+            if has_labels:
+                labels.extend(batch["year"].cpu().numpy().tolist())
 
-        with open(metrics_path, "w") as f:
-            json.dump(metrics, f, indent=2)
-        print(f"Metrics summary saved to: {metrics_path}")
+    # ---------------- Save CSV ----------------
+    os.makedirs(os.path.dirname(args.out_csv), exist_ok=True)
+    with open(args.out_csv, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["path", "y_true", "y_pred"])
+        for i, p in enumerate(preds):
+            y_true = labels[i] if has_labels else ""
+            writer.writerow([paths[i], y_true, p])
 
-    print("\nTest evaluation completed!")
+    if has_labels:
+        mae = mae_metric.compute(predictions=preds, references=labels)
+        print("MAE on test set:", mae)
+    else:
+        print("Predictions written to", args.out_csv)
 
 
 if __name__ == "__main__":

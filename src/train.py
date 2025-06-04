@@ -1,156 +1,215 @@
 """
-Training script for the VortexModel painting year prediction system.
+Fine‑tune *facebook/dinov2‑large* on a single 16 GB GPU.
 
-This script handles the complete training pipeline including data loading,
-model training with PyTorch Lightning, and checkpoint saving.
+Key updates compared to the previous version
+-------------------------------------------
+* **Budget‑aware hyper‑parameter search** using Optuna’s **ASHA / Successive Halving**
+  – fast exploratory runs (≈ 500 training steps) prune weak trials early.
+* **Sampler** switched to `TPESampler(multivariate=True)` for smarter proposals.
+* **Narrowed search‑space** (learning‑rate 1e‑5→1e‑4, LoRA r ∈ {4,8,12}, etc.)
+* **Search runs just 1 epoch**; after the best config is found we re‑train for
+  **4 epochs** to converge.
 
-Usage:
-    python -m vortex.train --csv data.csv --epochs 30 --batch 32
+Memory‑saving still comes from:
+* 8‑bit weight loading (`bitsandbytes`)
+* fp16 activations
+* gradient‑checkpointing
+* batch size ≤ 2
+* LoRA only on Q/V projections
 """
 
+import os
+import math
 import argparse
-import pytorch_lightning as pl
 import torch
-from pytorch_lightning.loggers import CSVLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
-from torch.utils.data import DataLoader
-from dataset import PaintingDataset
-from model import VortexModel, _step
-from utils import calculate_mae  # Modified import
+from datasets import load_dataset
+from transformers import (
+    AutoImageProcessor,
+    AutoModel,
+    Trainer,
+    TrainingArguments,
+    default_data_collator,
+)
+from peft import LoraConfig, get_peft_model
+import evaluate
+import optuna
+from optuna.samplers import TPESampler
+from optuna.pruners import SuccessiveHalvingPruner
+from PIL import Image
+
+from coral_pytorch.layers import CoralLayer
+from coral_pytorch.losses import CoralLoss
+from coral_pytorch.dataset import levels_from_labelbatch
+
+# ---------- constants ----------
+NUM_CLASSES = 300
+MODEL_NAME = "facebook/dinov2-large"  # fits in 16 GB with 8‑bit weights + LoRA
+SEARCH_MIN_EPOCHS = 1  # budgeted mini‑epoch during HPO
+FINAL_EPOCHS = 4  # full training after HPO
+EVAL_STEPS = 200  # evaluation interval (steps)
+PRUNER_MIN_STEPS = 500  # first ASHA rung (≈ 500 steps)
 
 
-class Wrapper(pl.LightningModule):
-    """
-    PyTorch Lightning wrapper for VortexModel.
-
-    This wrapper handles the training loop, optimization, and logging
-    for the painting year prediction model.
-    """
-
-    def __init__(self, cfg: argparse.Namespace):
+# ---------- Model wrapper ----------
+class DinoV2Coral(torch.nn.Module):
+    def __init__(self):
         super().__init__()
-        self.save_hyperparameters(cfg)
-        print(cfg.keys())
-        # Initialize model with configuration
-        self.model = VortexModel(lora_r=cfg["lora_r"], lora_alpha=cfg["lora_alpha"])
-        self.lr = cfg["lr"]
-        self.wd = cfg["weight_decay"]
-
-    def training_step(self, batch: tuple, batch_idx: int) -> torch.Tensor:
-        """Training step with loss and metrics logging."""
-        loss, mae = _step(self.model, batch)
-        self.log_dict(
-            {"train_loss": loss, "train_MAE": mae}, on_step=True, on_epoch=True
+        self.base = AutoModel.from_pretrained(
+            MODEL_NAME,
+            device_map=None,
+            load_in_8bit=True,
+            torch_dtype=torch.float16,
         )
-        return loss
+        hidden = self.base.config.hidden_size
+        self.head = CoralLayer(hidden, NUM_CLASSES)
+        self.criterion = CoralLoss(num_classes=NUM_CLASSES)
 
-    def validation_step(self, batch: tuple, batch_idx: int) -> None:
-        """Validation step with MAE logging."""
-        _, mae = _step(self.model, batch)
-        self.log("val_MAE", mae, prog_bar=True)
-
-    def configure_optimizers(self) -> dict:
-        """Configure optimizer and learning rate scheduler."""
-        optimizer = torch.optim.AdamW(
-            self.parameters(), lr=self.lr, weight_decay=self.wd
-        )
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=self.trainer.max_epochs
-        )
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": {"scheduler": scheduler, "interval": "epoch"},
-        }
+    def forward(self, pixel_values, labels=None):
+        rep = self.base(pixel_values=pixel_values).last_hidden_state[:, 0]
+        logits = self.head(rep)
+        if labels is not None:
+            levels = levels_from_labelbatch(labels, NUM_CLASSES).to(logits.device)
+            loss = self.criterion(logits, levels)
+            return {"loss": loss, "logits": logits}
+        return {"logits": logits}
 
 
-def cli() -> argparse.Namespace:
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Train VortexModel for painting year prediction"
+# ---------- Data transforms ----------
+processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
+RESIZE_SIZE = processor.size.get("shortest_edge", 224)
+
+
+def preprocess(example):
+    img = Image.open(example["path"]).convert("RGB")
+    pv = processor(
+        img, do_resize=True, size={"shortest_edge": RESIZE_SIZE}, return_tensors="pt"
+    )["pixel_values"][0]
+    example["pixel_values"] = pv.half()
+    example["labels"] = int(example["year"])
+    return example
+
+
+def make_dataset(csv):
+    return (
+        load_dataset("csv", data_files=csv)["train"]
+        .map(preprocess, remove_columns=["path", "year"])
+        .with_format("torch")
     )
-    parser.add_argument(
-        "--train-csv", required=True, help="Path to training CSV file"
+
+
+# ---------- Metric ----------
+mae_metric = evaluate.load("mae")
+
+
+def coral_logits_to_label(logits):
+    probs = torch.sigmoid(logits)
+    return (probs > 0.5).sum(dim=1)
+
+
+def compute_metrics(p):
+    logits, labels = p
+    preds = coral_logits_to_label(torch.tensor(logits))
+    return {
+        "mae": mae_metric.compute(predictions=preds.cpu().numpy(), references=labels)
+    }
+
+
+# ---------- Optuna helpers ----------
+
+
+def model_init(trial):
+    model = DinoV2Coral()
+    r = trial.suggest_categorical("lora_r", [4, 8, 12])
+    alpha_mult = trial.suggest_categorical("alpha_mult", [1, 2, 4])
+    alp = r * alpha_mult
+    drp = trial.suggest_float("lora_dropout", 0.0, 0.15)
+    cfg = LoraConfig(
+        r=r,
+        lora_alpha=alp,
+        lora_dropout=drp,
+        bias="none",
+        target_modules=["q_proj", "v_proj"],
+        task_type="IMAGE_CLASSIFICATION",
     )
-    parser.add_argument(
-        "--val-csv", required=True, help="Path to validation CSV file"
-    )
-    parser.add_argument(
-        "--epochs", type=int, default=30, help="Number of training epochs"
-    )
-    parser.add_argument(
-        "--batch", type=int, default=32, help="Batch size for training and validation"
-    )
-    parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
-    parser.add_argument(
-        "--weight_decay",
-        type=float,
-        default=0.01,
-        help="Weight decay for regularization",
-    )
-    parser.add_argument("--lora_r", type=int, default=8, help="LoRA rank parameter")
-    parser.add_argument(
-        "--lora_alpha",
-        type=int,
-        default=16,
-        help="LoRA alpha scaling parameter (common: rank to 4×rank)",
-    )
-    return parser.parse_args()
+    model.base = get_peft_model(model.base, cfg)
+    return model
+
+
+def hp_space(trial):
+    return {
+        "per_device_train_batch_size": trial.suggest_categorical("bs", [1, 2]),
+        "learning_rate": trial.suggest_float("lr", 1e-5, 1e-4, log=True),
+        "num_train_epochs": SEARCH_MIN_EPOCHS,  # fixed during search
+        "weight_decay": trial.suggest_float("wd", 1e-5, 1e-2, log=True),
+    }
+
+
+sampler = TPESampler(multivariate=True, group=True)
+pruner = SuccessiveHalvingPruner(
+    min_resource=PRUNER_MIN_STEPS, reduction_factor=3, min_early_stopping_rate=0
+)
+
+# ---------- CLI ----------
 
 
 def main():
-    """Main training function."""
-    cfg = cli()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--train_csv", required=True)
+    ap.add_argument("--val_csv", required=True)
+    ap.add_argument("--output_dir", required=True)
+    ap.add_argument("--optuna_trials", type=int, default=60)
+    args = ap.parse_args()
 
-    # Create separate data loaders for train and validation
-    dl_train = DataLoader(
-        PaintingDataset(cfg.train_csv),
-        batch_size=cfg.batch,
-        shuffle=True,
-        num_workers=8,
-        pin_memory=True,  # Faster GPU transfer
-    )
-    dl_val = DataLoader(
-        PaintingDataset(cfg.val_csv),
-        batch_size=cfg.batch,
-        shuffle=False,
-        num_workers=8,
-        pin_memory=True,
-    )
+    train_ds, val_ds = make_dataset(args.train_csv), make_dataset(args.val_csv)
 
-    # Set up logging
-    logger = CSVLogger("lightning_logs", name="vortex")
-
-    # Configure model checkpointing
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_MAE",
-        mode="min",
-        save_top_k=1,
-        filename="best-{epoch:02d}-{val_MAE:.3f}",
-        save_last=True,
-        verbose=True,
+    base_args = TrainingArguments(
+        output_dir=args.output_dir,
+        evaluation_strategy="steps",
+        save_strategy="no",
+        eval_steps=EVAL_STEPS,
+        gradient_checkpointing=True,
+        per_device_train_batch_size=2,
+        per_device_eval_batch_size=2,
+        fp16=True,
+        logging_steps=EVAL_STEPS,
+        metric_for_best_model="mae",
+        greater_is_better=False,
+        max_grad_norm=1.0,
     )
 
-    # Configure trainer
-    trainer = pl.Trainer(
-        max_epochs=cfg.epochs,
-        accelerator="gpu" if torch.cuda.is_available() else "cpu",
-        devices=1,
-        precision="16-mixed",  # Mixed precision for faster training
-        logger=logger,
-        callbacks=[
-            pl.callbacks.EarlyStopping("val_MAE", patience=5, mode="min"),
-            checkpoint_callback,
-        ],
-        log_every_n_steps=50,  # Log metrics every 50 steps
+    trainer = Trainer(
+        args=base_args,
+        train_dataset=train_ds,
+        eval_dataset=val_ds,
+        data_collator=default_data_collator,
+        compute_metrics=compute_metrics,
+        tokenizer=processor,
     )
 
-    # Train the model
-    trainer.fit(Wrapper(cfg), dl_train, dl_val)
+    best = trainer.hyperparameter_search(
+        direction="minimize",
+        backend="optuna",
+        hp_space=hp_space,
+        n_trials=args.optuna_trials,
+        sampler=sampler,
+        pruner=pruner,
+        compute_objective=lambda m: m["eval_mae"],
+        model_init=model_init,
+    )
 
-    # Print checkpoint locations
-    print("Training completed!")
-    print(f"Best model saved at: {checkpoint_callback.best_model_path}")
-    print(f"Last model saved at: {checkpoint_callback.last_model_path}")
+    # ---------------- Final training with best hyper‑params ----------------
+    final_args = base_args.clone()
+    for k, v in best.hyperparameters.items():
+        setattr(final_args, k, v)
+    final_args.num_train_epochs = FINAL_EPOCHS  # longer run
+    final_args.save_strategy = "epoch"
+
+    trainer.args = final_args
+    trainer.model = model_init(optuna.trial.FixedTrial(best.hyperparameters))
+    trainer.train()
+    trainer.save_model()
+    trainer.save_metrics("train", {})
+    print("Best trial:", best)
 
 
 if __name__ == "__main__":
