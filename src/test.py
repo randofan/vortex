@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from pathlib import Path
 from dataset import PaintingDataset
-from vortexmodel import VortexModel
+from model import VortexModel
 from utils import BASE_YEAR, calculate_mae
 
 

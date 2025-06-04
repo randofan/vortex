@@ -14,7 +14,7 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 from dataset import PaintingDataset
-from vortexmodel import VortexModel, _step
+from model import VortexModel, _step
 from utils import calculate_mae  # Modified import
 
 
