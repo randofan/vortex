@@ -6,10 +6,10 @@ Example
 -------
 python test_coral_preds.py \
     --checkpoint  runs/dino_lora \
-    --test_csv    splits/test.csv \
-    --out_csv     results/test_preds.csv
+    --test-csv    splits/test.csv \
+    --out-csv     results/test_preds.csv
 
-Writes **out_csv** with columns: `path,y_true,y_pred`.
+Writes **out-csv** with columns: `path,y_true,y_pred`.
 If the `year` column exists in the CSV, MAE is printed.
 """
 
@@ -44,8 +44,8 @@ def preprocess(example):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--checkpoint", required=True)
-    ap.add_argument("--test_csv", required=True)
-    ap.add_argument("--out_csv", required=True)
+    ap.add_argument("--test-csv", required=True)
+    ap.add_argument("--out-csv", required=True)
     ap.add_argument("--batch", type=int, default=2)
     args = ap.parse_args()
 
