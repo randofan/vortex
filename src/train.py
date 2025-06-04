@@ -154,17 +154,17 @@ pruner = SuccessiveHalvingPruner(
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--train_csv", required=True)
-    ap.add_argument("--val_csv", required=True)
-    ap.add_argument("--output_dir", required=True)
-    ap.add_argument("--optuna_trials", type=int, default=60)
+    ap.add_argument("--train-csv", required=True)
+    ap.add_argument("--val-csv", required=True)
+    ap.add_argument("--output-dir", required=True)
+    ap.add_argument("--optuna-trials", type=int, default=60)
     args = ap.parse_args()
 
     train_ds, val_ds = make_dataset(args.train_csv), make_dataset(args.val_csv)
 
     base_args = TrainingArguments(
         output_dir=args.output_dir,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         save_strategy="no",
         eval_steps=EVAL_STEPS,
         gradient_checkpointing=True,
@@ -184,6 +184,7 @@ def main():
         data_collator=default_data_collator,
         compute_metrics=compute_metrics,
         tokenizer=processor,
+        model_init=model_init
     )
 
     best = trainer.hyperparameter_search(
