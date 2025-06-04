@@ -8,7 +8,6 @@ used across the painting year prediction system.
 import torch  # Add this import
 from transformers import AutoImageProcessor
 
-from .model import VortexModel  # Add this import
 
 # Model configuration
 MODEL_NAME = (
@@ -51,26 +50,3 @@ def calculate_mae(predictions, targets):
     """
     return (predictions - targets).abs().float()
 
-
-def _step(model: VortexModel, batch: tuple) -> tuple[torch.Tensor, torch.Tensor]:
-    """
-    Perform a single training/validation step.
-
-    Args:
-        model: The VortexModel instance
-        batch: Tuple of (images, year_labels)
-
-    Returns:
-        Tuple of (loss, mae) where:
-        - loss: CORAL loss for backpropagation
-        - mae: Mean Absolute Error for monitoring
-    """
-    x, y = batch
-    logits = model(x)
-    loss = model.coral_loss_fn(logits, y)
-
-    # Calculate MAE using shared utility function
-    predictions = model.decode_coral(logits)
-    mae = calculate_mae(predictions, y).mean()
-
-    return loss, mae

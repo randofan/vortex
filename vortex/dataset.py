@@ -9,7 +9,7 @@ import cv2
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-from .utils import get_image_processor, BASE_YEAR
+from utils import get_image_processor, BASE_YEAR
 
 
 class PaintingDataset(Dataset):
@@ -64,7 +64,7 @@ class PaintingDataset(Dataset):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Use HF processor for consistent preprocessing (resize, normalize, etc.)
-        inputs = self.processor(img, return_tensors="pt")
+        inputs = self.processor(images=img, return_tensors="pt")
         x = inputs["pixel_values"].squeeze(0)  # Remove batch dimension
 
         # Convert year to offset from base year

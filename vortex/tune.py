@@ -13,9 +13,9 @@ import optuna
 import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
-from .dataset import PaintingDataset
-from .model import VortexModel
-from .utils import calculate_mae, _step  # Modified import
+from dataset import PaintingDataset
+from vortexmodel import VortexModel, _step
+from utils import calculate_mae  # Modified import
 
 
 class Lit(pl.LightningModule):

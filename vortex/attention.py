@@ -13,7 +13,7 @@ import torchvision.transforms as T
 from torchvision.transforms.functional import to_pil_image
 from PIL import Image
 import matplotlib.pyplot as plt
-from .utils import get_image_processor
+from utils import get_image_processor
 
 
 @torch.no_grad()

@@ -1,0 +1,6 @@
+scikit-learn
+pytorch-lightning
+opencv-python
+transformers
+peft
+coral-pytorch

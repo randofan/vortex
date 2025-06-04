@@ -14,9 +14,9 @@ import torch
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torch.utils.data import DataLoader
-from .dataset import PaintingDataset
-from .model import VortexModel
-from .utils import calculate_mae, _step  # Modified import
+from dataset import PaintingDataset
+from vortexmodel import VortexModel, _step
+from utils import calculate_mae  # Modified import
 
 
 class Wrapper(pl.LightningModule):

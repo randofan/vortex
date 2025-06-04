@@ -11,7 +11,7 @@ import torch
 from peft import get_peft_model, LoraConfig, TaskType
 from coral_pytorch.layers import CoralLayer
 from coral_pytorch.losses import coral_loss
-from .utils import MODEL_NAME, NUM_CLASSES
+from utils import MODEL_NAME, NUM_CLASSES
 
 
 def _get_model_embedding_size(model_name: str) -> int:
@@ -72,7 +72,7 @@ class VortexModel(nn.Module):
 
         # Configure LoRA adapters for parameter-efficient fine-tuning
         peft_cfg = LoraConfig(
-            task_type=TaskType.FEATURE_EXTRACTION,
+            # task_type=TaskType.FEATURE_EXTRACTION,
             r=lora_r,
             lora_alpha=lora_alpha,  # Now configurable scaling factor
             target_modules=["query", "key", "value", "dense"],  # Attention modules
@@ -144,3 +144,28 @@ class VortexModel(nn.Module):
             Predicted year offsets (B,)
         """
         return (torch.sigmoid(logits) > 0.5).sum(1)
+
+# standalone function
+def _step(vortex_model: VortexModel, batch: tuple) -> tuple[torch.Tensor, torch.Tensor]:
+    """
+    Perform a single training/validation step.
+
+    Args:
+        model: The VortexModel instance
+        batch: Tuple of (images, year_labels)
+
+    Returns:
+        Tuple of (loss, mae) where:
+        - loss: CORAL loss for backpropagation
+        - mae: Mean Absolute Error for monitoring
+    """
+    x, y = batch
+    # print(x)
+    logits = vortex_model(x)
+    loss = vortex_model.coral_loss_fn(logits, y)
+
+    # Calculate MAE using shared utility function
+    predictions = vortex_model.decode_coral(logits)
+    mae = calculate_mae(predictions, y).mean()
+
+    return loss, mae
