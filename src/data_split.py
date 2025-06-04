@@ -10,7 +10,7 @@ from datasets import load_dataset
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--csv", required=True)
-    p.add_argument("--output_dir", required=True)
+    p.add_argument("--output-dir", required=True)
     p.add_argument("--seed", type=int, default=42)
     args = p.parse_args()
 
