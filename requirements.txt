@@ -5,5 +5,5 @@ transformers
 peft
 coral-pytorch
 pandas
-kjqpillow
+pillow
 hf_xet
