@@ -66,10 +66,8 @@ def _step(model: VortexModel, batch: tuple) -> tuple[torch.Tensor, torch.Tensor]
         - mae: Mean Absolute Error for monitoring
     """
     x, y = batch
-    logits = model(x)
+    logits = model(pixel_values=x)
     loss = model.coral_loss_fn(logits, y)
-
-    # Calculate MAE using shared utility function
     predictions = model.decode_coral(logits)
     mae = calculate_mae(predictions, y).mean()
 
