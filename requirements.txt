@@ -7,3 +7,5 @@ coral-pytorch
 pandas
 pillow
 hf_xet
+datasets
+evaluate
