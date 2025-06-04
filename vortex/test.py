@@ -104,7 +104,7 @@ def load_model_from_checkpoint(checkpoint_path: str) -> VortexModel:
         Loaded VortexModel instance
     """
     try:
-        from .train import Wrapper
+        from train import Wrapper
 
         # Load Lightning wrapper
         wrapper = Wrapper.load_from_checkpoint(checkpoint_path)

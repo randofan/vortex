@@ -30,11 +30,11 @@ class Wrapper(pl.LightningModule):
     def __init__(self, cfg: argparse.Namespace):
         super().__init__()
         self.save_hyperparameters(cfg)
-
+        print(cfg.keys())
         # Initialize model with configuration
-        self.model = VortexModel(lora_r=cfg.lora_r, lora_alpha=cfg.lora_alpha)
-        self.lr = cfg.lr
-        self.wd = cfg.weight_decay
+        self.model = VortexModel(lora_r=cfg["lora_r"], lora_alpha=cfg["lora_alpha"])
+        self.lr = cfg["lr"]
+        self.wd = cfg["weight_decay"]
 
     def training_step(self, batch: tuple, batch_idx: int) -> torch.Tensor:
         """Training step with loss and metrics logging."""

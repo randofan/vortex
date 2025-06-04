@@ -1,0 +1,11 @@
+{
+  "mae_mean": 98.0,
+  "mae_std": 104.73458518241877,
+  "mae_median": 74.0,
+  "mae_min": 0.0,
+  "mae_max": 237.0,
+  "samples_count": 10,
+  "accuracy_5yr": 50.0,
+  "accuracy_10yr": 50.0,
+  "accuracy_20yr": 50.0
+}
