@@ -41,16 +41,16 @@ from coral_pytorch.layers import CoralLayer
 from coral_pytorch.losses import CoralLoss
 from coral_pytorch.dataset import levels_from_labelbatch
 
-# ---------- constants ----------
+# ---------- constants ----------
 NUM_CLASSES = 300
-MODEL_NAME = "facebook/dinov2-large"  # fits in 16 GB with 8‑bit weights + LoRA
-SEARCH_MIN_EPOCHS = 1  # budgeted mini‑epoch during HPO
-FINAL_EPOCHS = 4  # full training after HPO
+MODEL_NAME = "facebook/dinov2-large"
+SEARCH_MIN_EPOCHS = 1  # epochs per trial during HPO
+FINAL_EPOCHS = 4  # full training epochs after HPO
 EVAL_STEPS = 200  # evaluation interval (steps)
-PRUNER_MIN_STEPS = 500  # first ASHA rung (≈ 500 steps)
+PRUNER_MIN_STEPS = 500  # first ASHA rung
 
 
-# ---------- Model wrapper ----------
+# ---------- Model wrapper ----------
 class DinoV2Coral(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -74,7 +74,7 @@ class DinoV2Coral(torch.nn.Module):
         return {"logits": logits}
 
 
-# ---------- Data transforms ----------
+# ---------- Data pipeline ----------
 processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
 RESIZE_SIZE = processor.size.get("shortest_edge", 224)
 
@@ -85,19 +85,19 @@ def preprocess(example):
         img, do_resize=True, size={"shortest_edge": RESIZE_SIZE}, return_tensors="pt"
     )["pixel_values"][0]
     example["pixel_values"] = pv.half()
-    example["labels"] = int(example["year"])
+    example["labels"] = int(example["num"])
     return example
 
 
-def make_dataset(csv):
+def make_dataset(csv_path):
     return (
-        load_dataset("csv", data_files=csv)["train"]
-        .map(preprocess, remove_columns=["path", "year"])
+        load_dataset("csv", data_files=csv_path)["train"]
+        .map(preprocess, remove_columns=["path", "num"])
         .with_format("torch")
     )
 
 
-# ---------- Metric ----------
+# ---------- Metrics ----------
 mae_metric = evaluate.load("mae")
 
 
@@ -116,21 +116,34 @@ def compute_metrics(p):
 
 # ---------- Optuna helpers ----------
 
+best_hparams = {}
 
-def model_init(trial):
-    model = DinoV2Coral()
-    r = trial.suggest_categorical("lora_r", [4, 8, 12])
-    alpha_mult = trial.suggest_categorical("alpha_mult", [1, 2, 4])
-    alp = r * alpha_mult
-    drp = trial.suggest_float("lora_dropout", 0.0, 0.15)
+
+def model_init(trial: optuna.Trial | None = None):
+    """
+    If Optuna supplies `trial`, sample hyper-params.
+    Otherwise re-use the best set stored in `best_hparams`.
+    """
+    if trial is not None:
+        r = trial.suggest_categorical("lora_r", [4, 8, 12])
+        alpha_m = trial.suggest_categorical("alpha_mult", [1, 2, 4])
+        drp = trial.suggest_float("lora_dropout", 0.0, 0.15)
+        best_hparams.update(dict(lora_r=r, alpha_mult=alpha_m, lora_dropout=drp))
+    else:
+        hp = best_hparams
+        r, alpha_m, drp = hp["lora_r"], hp["alpha_mult"], hp["lora_dropout"]
+
+    alpha = r * alpha_m
     cfg = LoraConfig(
         r=r,
-        lora_alpha=alp,
+        lora_alpha=alpha,
         lora_dropout=drp,
         bias="none",
         target_modules=["q_proj", "v_proj"],
         task_type="IMAGE_CLASSIFICATION",
     )
+
+    model = DinoV2Coral()
     model.base = get_peft_model(model.base, cfg)
     return model
 
@@ -179,6 +192,7 @@ def main():
 
     trainer = Trainer(
         args=base_args,
+        model_init=model_init,
         train_dataset=train_ds,
         eval_dataset=val_ds,
         data_collator=default_data_collator,
@@ -195,7 +209,6 @@ def main():
         sampler=sampler,
         pruner=pruner,
         compute_objective=lambda m: m["eval_mae"],
-        model_init=model_init,
     )
 
     # ---------------- Final training with best hyper‑params ----------------
@@ -206,7 +219,7 @@ def main():
     final_args.save_strategy = "epoch"
 
     trainer.args = final_args
-    trainer.model = model_init(optuna.trial.FixedTrial(best.hyperparameters))
+    trainer.create_model()
     trainer.train()
     trainer.save_model()
     trainer.save_metrics("train", {})
