@@ -16,3 +16,4 @@ base-joconde-extrait.csv
 *.tar
 .vscode
 images
+lightning_logs

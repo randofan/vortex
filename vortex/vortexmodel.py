@@ -11,7 +11,8 @@ import torch
 from peft import get_peft_model, LoraConfig, TaskType
 from coral_pytorch.layers import CoralLayer
 from coral_pytorch.losses import coral_loss
-from utils import MODEL_NAME, NUM_CLASSES
+from coral_pytorch.dataset import levels_from_labelbatch
+from utils import MODEL_NAME, NUM_CLASSES, calculate_mae
 
 
 def _get_model_embedding_size(model_name: str) -> int:
@@ -130,7 +131,9 @@ class VortexModel(nn.Module):
         Returns:
             CORAL loss scalar
         """
-        return coral_loss(logits, y)
+        # convert labels into 'levels' where it's (B, NUM_CLASSES-1) as well
+        levels = levels_from_labelbatch(y, NUM_CLASSES-1)
+        return coral_loss(logits, levels)
 
     @staticmethod
     def decode_coral(logits: torch.Tensor) -> torch.Tensor:
