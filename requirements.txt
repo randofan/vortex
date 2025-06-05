@@ -11,3 +11,4 @@ datasets
 evaluate
 optuna
 bitsandbytes
+matplotlib

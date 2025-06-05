@@ -41,6 +41,9 @@ from coral_pytorch.layers import CoralLayer
 from coral_pytorch.losses import CoralLoss
 from coral_pytorch.dataset import levels_from_labelbatch
 
+import pandas as pd
+import matplotlib as plt
+
 # ---------- constants ----------
 NUM_CLASSES = 300
 BASE_YEAR = 1600
@@ -219,13 +222,19 @@ def main():
     for k, v in best.hyperparameters.items():
         setattr(final_args, k, v)
     final_args.num_train_epochs = FINAL_EPOCHS  # longer run
-    final_args.save_strategy = "epoch"
+    final_args.save_strategy = "best"
 
     trainer.args = final_args
     trainer.train()
     trainer.save_model()
     print("Best trial:", best)
 
+    # plot loss curve
+    df = pd.DataFrame(trainer.state.log_history)
+    df.to_csv(args.output_dir + "/train_log.csv")
+
+    plt.plot(df)
+    plt.savefig(args.output_dir + "train_loss.png")
 
 if __name__ == "__main__":
     main()
