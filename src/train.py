@@ -33,7 +33,7 @@ from coral_pytorch.dataset import levels_from_labelbatch
 NUM_CLASSES = 300
 BASE_YEAR = 1600
 MODEL_NAME = "facebook/dinov2-base"
-EVAL_STEPS = 200
+EVAL_STEPS = 1000
 
 # ---------- Train-specific Constants ----------
 FINAL_EPOCHS = 4  # Full training epochs for the final run
@@ -42,7 +42,7 @@ FINAL_EPOCHS = 4  # Full training epochs for the final run
 # These are initialized here so they are available for functions in this module
 # when train.py is imported or run.
 try:
-    processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
+    processor = AutoImageProcessor.from_pretrained(MODEL_NAME, use_fast=True)
     RESIZE_SIZE = processor.size.get("shortest_edge", 224)
 except Exception as e:
     print(
@@ -73,6 +73,7 @@ class DinoV2Coral(torch.nn.Module):
         hidden = self.base.config.hidden_size
         self.head = CoralLayer(hidden, NUM_CLASSES)
         self.criterion = CoralLoss(reduction="mean")
+        # self.head.to(torch.float16)
 
     def forward(self, pixel_values, labels=None, attention=False):
         outs = self.base(pixel_values=pixel_values, output_attentions=True)
@@ -93,7 +94,8 @@ def preprocess(example):
     # Accesses global 'processor', 'RESIZE_SIZE', 'BASE_YEAR' from this module
     if not processor:
         raise ValueError("Image processor is not initialized.")
-    img = Image.open(example["path"]).convert("RGB")
+    path = f"/home/davsong/vortex/data/{example['path']}"
+    img = Image.open(path).convert("RGB")
     pv = processor(
         img, do_resize=True, size={"shortest_edge": RESIZE_SIZE}, return_tensors="pt"
     )["pixel_values"][0]
@@ -118,8 +120,8 @@ def coral_logits_to_label(logits):
 
 def compute_metrics(p):
     # Accesses global 'mae_metric' from this module
-    if not mae_metric:
-        raise ValueError("MAE metric is not initialized.")
+    # if not mae_metric:
+    #     raise ValueError("MAE metric is not initialized.")
     logits, labels = p
     preds = coral_logits_to_label(torch.tensor(logits))
     return mae_metric.compute(predictions=preds.cpu().numpy(), references=labels)
@@ -140,11 +142,14 @@ def main():
     with open(args.config, 'r') as f:
         config = json.load(f)
 
-    if not processor or not mae_metric:
-        print("Error: Processor or MAE metric not initialized. Exiting.")
-        return
+    # if not processor or not mae_metric:
+    #     print(f"Error: Processor or MAE metric not initialized. Exiting.\n{processor}\n{mae_metric}")
+    #     return
 
     train_ds, val_ds = make_dataset(args.train_csv), make_dataset(args.val_csv)
+    if not train_ds or not val_ds:
+        print("Datasets not loaded correctly")
+        return
 
     model = DinoV2Coral()
 
@@ -163,6 +168,7 @@ def main():
         eval_strategy="steps",
         save_strategy="no",
         eval_steps=EVAL_STEPS,
+        num_train_epochs=FINAL_EPOCHS,
         per_device_train_batch_size=config['bs'],
         per_device_eval_batch_size=config['bs'],
         learning_rate=config['lr'],
@@ -185,6 +191,7 @@ def main():
     )
 
     print("Starting final training with specified hyperparameters...")
+    # trainer.train(resume_from_checkpoint="/home/davsong/vortex/outputs/")
     trainer.train()
 
     print(f"Saving best model to {args.output_dir}...")
