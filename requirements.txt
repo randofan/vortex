@@ -9,3 +9,5 @@ pillow
 hf_xet
 datasets
 evaluate
+optuna
+bitsandbytes

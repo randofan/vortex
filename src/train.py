@@ -48,6 +48,7 @@ SEARCH_MIN_EPOCHS = 1  # epochs per trial during HPO
 FINAL_EPOCHS = 4  # full training epochs after HPO
 EVAL_STEPS = 200  # evaluation interval (steps)
 PRUNER_MIN_STEPS = 500  # first ASHA rung
+BASE_YEAR = 1600 # Base year for relative year calculation
 
 
 # ---------- Model wrapper ----------
@@ -62,7 +63,7 @@ class DinoV2Coral(torch.nn.Module):
         )
         hidden = self.base.config.hidden_size
         self.head = CoralLayer(hidden, NUM_CLASSES)
-        self.criterion = CoralLoss(num_classes=NUM_CLASSES)
+        self.criterion = CoralLoss(reduction='mean')
 
     def forward(self, pixel_values, labels=None):
         rep = self.base(pixel_values=pixel_values).last_hidden_state[:, 0]
@@ -85,14 +86,14 @@ def preprocess(example):
         img, do_resize=True, size={"shortest_edge": RESIZE_SIZE}, return_tensors="pt"
     )["pixel_values"][0]
     example["pixel_values"] = pv.half()
-    example["labels"] = int(example["num"])
+    example["labels"] = int(example["year"]) - BASE_YEAR
     return example
 
 
 def make_dataset(csv_path):
     return (
         load_dataset("csv", data_files=csv_path)["train"]
-        .map(preprocess, remove_columns=["path", "num"])
+        .map(preprocess, remove_columns=["path", "year"])
         .with_format("torch")
     )
 
@@ -109,9 +110,7 @@ def coral_logits_to_label(logits):
 def compute_metrics(p):
     logits, labels = p
     preds = coral_logits_to_label(torch.tensor(logits))
-    return {
-        "mae": mae_metric.compute(predictions=preds.cpu().numpy(), references=labels)
-    }
+    return mae_metric.compute(predictions=preds.cpu().numpy(), references=labels)
 
 
 # ---------- Optuna helpers ----------
@@ -130,7 +129,7 @@ def model_init(trial: optuna.Trial | None = None):
         drp = trial.suggest_float("lora_dropout", 0.0, 0.15)
         best_hparams.update(dict(lora_r=r, alpha_mult=alpha_m, lora_dropout=drp))
     else:
-        hp = best_hparams
+        hp = {'lora_r': 8, 'alpha_mult': 2, 'lora_dropout': 0.75}
         r, alpha_m, drp = hp["lora_r"], hp["alpha_mult"], hp["lora_dropout"]
 
     alpha = r * alpha_m
@@ -139,8 +138,8 @@ def model_init(trial: optuna.Trial | None = None):
         lora_alpha=alpha,
         lora_dropout=drp,
         bias="none",
-        target_modules=["q_proj", "v_proj"],
-        task_type="IMAGE_CLASSIFICATION",
+        target_modules=["query", "key", 'value', 'dense'],
+        # task_type="FEATURE_EXTRACTION",
     )
 
     model = DinoV2Coral()
@@ -180,7 +179,6 @@ def main():
         eval_strategy="steps",
         save_strategy="no",
         eval_steps=EVAL_STEPS,
-        gradient_checkpointing=True,
         per_device_train_batch_size=2,
         per_device_eval_batch_size=2,
         fp16=True,
@@ -198,7 +196,6 @@ def main():
         data_collator=default_data_collator,
         compute_metrics=compute_metrics,
         tokenizer=processor,
-        model_init=model_init
     )
 
     best = trainer.hyperparameter_search(
@@ -212,14 +209,14 @@ def main():
     )
 
     # ---------------- Final training with best hyper‑params ----------------
-    final_args = base_args.clone()
+    final_args = base_args
     for k, v in best.hyperparameters.items():
         setattr(final_args, k, v)
     final_args.num_train_epochs = FINAL_EPOCHS  # longer run
     final_args.save_strategy = "epoch"
 
     trainer.args = final_args
-    trainer.create_model()
+    # trainer.create_model()
     trainer.train()
     trainer.save_model()
     trainer.save_metrics("train", {})
