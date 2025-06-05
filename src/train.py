@@ -44,7 +44,7 @@ from coral_pytorch.dataset import levels_from_labelbatch
 # ---------- constants ----------
 NUM_CLASSES = 300
 BASE_YEAR = 1600
-MODEL_NAME = "facebook/dinov2-large"
+MODEL_NAME = "facebook/dinov2-base"
 SEARCH_MIN_EPOCHS = 1  # epochs per trial during HPO
 FINAL_EPOCHS = 4  # full training epochs after HPO
 EVAL_STEPS = 200  # evaluation interval (steps)

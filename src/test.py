@@ -17,28 +17,14 @@ import argparse
 import os
 import csv
 import torch
-from datasets import load_dataset
 from torch.utils.data import DataLoader
 from transformers import default_data_collator
 from train import (
     DinoV2Coral,
     coral_logits_to_label,
-    RESIZE_SIZE,
-    processor,
+    make_dataset,
+    mae_metric
 )
-from PIL import Image
-import evaluate
-
-mae_metric = evaluate.load("mae")
-
-
-def preprocess(example):
-    img = Image.open(example["path"]).convert("RGB")
-    pv = processor(
-        img, do_resize=True, size={"shortest_edge": RESIZE_SIZE}, return_tensors="pt"
-    )["pixel_values"][0]
-    example["pixel_values"] = pv.half()
-    return example
 
 
 def main():
@@ -49,12 +35,7 @@ def main():
     ap.add_argument("--batch", type=int, default=2)
     args = ap.parse_args()
 
-    # ---------------- Load dataset ----------------
-    ds = (
-        load_dataset("csv", data_files=args.test_csv)["train"]
-        .map(preprocess)
-        .with_format("torch")
-    )
+    ds = make_dataset(args.test_csv)
 
     has_labels = "year" in ds.column_names
     dl = DataLoader(
@@ -80,9 +61,8 @@ def main():
     with torch.no_grad():
         for batch in dl:
             pixel_values = batch["pixel_values"].cuda()
-            logits = model.head(
-                model.base(pixel_values=pixel_values).last_hidden_state[:, 0]
-            )
+            out = model(pixel_values=pixel_values)
+            logits = out["logits"]
             pred = coral_logits_to_label(logits).cpu().numpy().tolist()
             preds.extend(pred)
             if has_labels:
