@@ -1,25 +1,4 @@
-"""
-Fine‑tune *facebook/dinov2‑large* on a single 16 GB GPU.
-
-Key updates compared to the previous version
--------------------------------------------
-* **Budget‑aware hyper‑parameter search** using Optuna’s **ASHA / Successive Halving**
-  – fast exploratory runs (≈ 500 training steps) prune weak trials early.
-* **Sampler** switched to `TPESampler(multivariate=True)` for smarter proposals.
-* **Narrowed search‑space** (learning‑rate 1e‑5→1e‑4, LoRA r ∈ {4,8,12}, etc.)
-* **Search runs just 1 epoch**; after the best config is found we re‑train for
-  **4 epochs** to converge.
-
-Memory‑saving still comes from:
-* 8‑bit weight loading (`bitsandbytes`)
-* fp16 activations
-* gradient‑checkpointing
-* batch size ≤ 2
-* LoRA only on Q/V projections
-"""
-
 import os
-import math
 import argparse
 import torch
 from datasets import load_dataset
@@ -30,31 +9,48 @@ from transformers import (
     TrainingArguments,
     default_data_collator,
 )
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model  # PEFT is used here for final model setup
 import evaluate
-import optuna
-from optuna.samplers import TPESampler
-from optuna.pruners import SuccessiveHalvingPruner
 from PIL import Image
+import pandas as pd
+import matplotlib.pyplot as plt
 
 from coral_pytorch.layers import CoralLayer
 from coral_pytorch.losses import CoralLoss
 from coral_pytorch.dataset import levels_from_labelbatch
 
-import pandas as pd
-import matplotlib as plt
-
-# ---------- constants ----------
+# ---------- Shared Constants (used by components in this file) ----------
 NUM_CLASSES = 300
 BASE_YEAR = 1600
 MODEL_NAME = "facebook/dinov2-base"
-SEARCH_MIN_EPOCHS = 1  # epochs per trial during HPO
-FINAL_EPOCHS = 4  # full training epochs after HPO
-EVAL_STEPS = 200  # evaluation interval (steps)
-PRUNER_MIN_STEPS = 500  # first ASHA rung
+EVAL_STEPS = 200
+
+# ---------- Train-specific Constants ----------
+FINAL_EPOCHS = 4  # Full training epochs for the final run
+
+# ---------- Global Initializations (for components defined in this file) ----------
+# These are initialized here so they are available for functions in this module
+# when train.py is imported or run.
+try:
+    processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
+    RESIZE_SIZE = processor.size.get("shortest_edge", 224)
+except Exception as e:
+    print(
+        f"Warning: Could not initialize AutoImageProcessor: {e}. Check MODEL_NAME and network."
+    )
+    processor = None
+    RESIZE_SIZE = 224
+
+try:
+    mae_metric = evaluate.load("mae")
+except Exception as e:
+    print(
+        f"Warning: Could not load MAE metric: {e}. Ensure 'evaluate' and 'scikit-learn' are installed."
+    )
+    mae_metric = None
 
 
-# ---------- Model wrapper ----------
+# ---------- Model wrapper (original definition) ----------
 class DinoV2Coral(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -66,7 +62,7 @@ class DinoV2Coral(torch.nn.Module):
         )
         hidden = self.base.config.hidden_size
         self.head = CoralLayer(hidden, NUM_CLASSES)
-        self.criterion = CoralLoss(reduction='mean')
+        self.criterion = CoralLoss(reduction="mean")
 
     def forward(self, pixel_values, labels=None, attention=False):
         outs = self.base(pixel_values=pixel_values, output_attentions=True)
@@ -82,12 +78,11 @@ class DinoV2Coral(torch.nn.Module):
         return res
 
 
-# ---------- Data pipeline ----------
-processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
-RESIZE_SIZE = processor.size.get("shortest_edge", 224)
-
-
+# ---------- Data pipeline (original definitions) ----------
 def preprocess(example):
+    # Accesses global 'processor', 'RESIZE_SIZE', 'BASE_YEAR' from this module
+    if not processor:
+        raise ValueError("Image processor is not initialized.")
     img = Image.open(example["path"]).convert("RGB")
     pv = processor(
         img, do_resize=True, size={"shortest_edge": RESIZE_SIZE}, return_tensors="pt"
@@ -105,82 +100,54 @@ def make_dataset(csv_path):
     )
 
 
-# ---------- Metrics ----------
-mae_metric = evaluate.load("mae")
-
-
+# ---------- Metrics (original definitions) ----------
 def coral_logits_to_label(logits):
     probs = torch.sigmoid(logits)
     return (probs > 0.5).sum(dim=1)
 
 
 def compute_metrics(p):
+    # Accesses global 'mae_metric' from this module
+    if not mae_metric:
+        raise ValueError("MAE metric is not initialized.")
     logits, labels = p
     preds = coral_logits_to_label(torch.tensor(logits))
     return mae_metric.compute(predictions=preds.cpu().numpy(), references=labels)
 
 
-# ---------- Optuna helpers ----------
-
-# Initial best hyper-parameters
-best_hparams = {"lora_r": 4, "alpha_mult": 1, "lora_dropout": 0.05}
-
-
-def model_init(trial: optuna.Trial | None = None):
-    """
-    If Optuna supplies `trial`, sample hyper-params.
-    Otherwise re-use the best set stored in `best_hparams`.
-    """
-    if trial is not None:
-        r = trial.suggest_categorical("lora_r", [4, 8, 12])
-        alpha_m = trial.suggest_categorical("alpha_mult", [1, 2, 4])
-        drp = trial.suggest_float("lora_dropout", 0.0, 0.15)
-    else:
-        r = best_hparams["lora_r"]
-        alpha_m = best_hparams["alpha_mult"]
-        drp = best_hparams["lora_dropout"]
-
-    alpha = r * alpha_m
-    cfg = LoraConfig(
-        r=r,
-        lora_alpha=alpha,
-        lora_dropout=drp,
-        bias="none",
-        target_modules=["query", "key", 'value', 'dense'],
-        # task_type="FEATURE_EXTRACTION",
-    )
-
-    model = DinoV2Coral()
-    model.base = get_peft_model(model.base, cfg)
-    return model
-
-
-def hp_space(trial):
-    return {
-        "per_device_train_batch_size": trial.suggest_categorical("bs", [1, 2]),
-        "learning_rate": trial.suggest_float("lr", 1e-5, 1e-4, log=True),
-        "num_train_epochs": SEARCH_MIN_EPOCHS,  # fixed during search
-        "weight_decay": trial.suggest_float("wd", 1e-5, 1e-2, log=True),
-    }
-
-
-sampler = TPESampler(multivariate=True, group=True)
-pruner = SuccessiveHalvingPruner(
-    min_resource=PRUNER_MIN_STEPS, reduction_factor=3, min_early_stopping_rate=0
-)
-
-# ---------- CLI ----------
-
-
+# ---------- Main Training Function (for direct execution of train.py) ----------
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(
+        description="Final training script for DinoV2-CORAL model."
+    )
     ap.add_argument("--train-csv", required=True)
     ap.add_argument("--val-csv", required=True)
     ap.add_argument("--output-dir", required=True)
-    ap.add_argument("--optuna-trials", type=int, default=60)
+    ap.add_argument("--lora_r", type=int, required=True)
+    ap.add_argument("--alpha_mult", type=int, required=True)
+    ap.add_argument("--lora_dropout", type=float, required=True)
+    ap.add_argument("--bs", type=int, required=True, help="Batch size per device")
+    ap.add_argument("--lr", type=float, required=True, help="Learning rate")
+    ap.add_argument("--wd", type=float, required=True, help="Weight decay")
     args = ap.parse_args()
 
+    if not processor or not mae_metric:
+        print("Error: Processor or MAE metric not initialized. Exiting.")
+        return
+
     train_ds, val_ds = make_dataset(args.train_csv), make_dataset(args.val_csv)
+
+    model = DinoV2Coral()
+
+    lora_alpha_value = args.lora_r * args.alpha_mult
+    lora_config = LoraConfig(
+        r=args.lora_r,
+        lora_alpha=lora_alpha_value,
+        lora_dropout=args.lora_dropout,
+        bias="none",
+        target_modules=["query", "key", "value", "dense"],
+    )
+    model.base = get_peft_model(model.base, lora_config)
 
     base_args = TrainingArguments(
         output_dir=args.output_dir,
@@ -197,8 +164,8 @@ def main():
     )
 
     trainer = Trainer(
+        model=model,
         args=base_args,
-        model_init=model_init,
         train_dataset=train_ds,
         eval_dataset=val_ds,
         data_collator=default_data_collator,
@@ -206,35 +173,38 @@ def main():
         tokenizer=processor,
     )
 
-    best = trainer.hyperparameter_search(
-        direction="minimize",
-        backend="optuna",
-        hp_space=hp_space,
-        n_trials=args.optuna_trials,
-        sampler=sampler,
-        pruner=pruner,
-        compute_objective=lambda m: m["eval_mae"],
-    )
-
-    # ---------------- Final training with best hyper‑params ----------------
-    best_hparams.update(best.hyperparameters)
-    final_args = base_args
-    for k, v in best.hyperparameters.items():
-        setattr(final_args, k, v)
-    final_args.num_train_epochs = FINAL_EPOCHS  # longer run
-    final_args.save_strategy = "best"
-
-    trainer.args = final_args
+    print("Starting final training with specified hyperparameters...")
     trainer.train()
+
+    print(f"Saving best model to {args.final_output_dir}...")
     trainer.save_model()
-    print("Best trial:", best)
 
-    # plot loss curve
+    if trainer.state.best_metric:
+        print(f"Best eval_mae achieved: {trainer.state.best_metric}")
+
     df = pd.DataFrame(trainer.state.log_history)
-    df.to_csv(args.output_dir + "/train_log.csv")
+    log_csv_path = os.path.join(args.final_output_dir, "train_log.csv")
+    df.to_csv(log_csv_path, index=False)
 
-    plt.plot(df)
-    plt.savefig(args.output_dir + "train_loss.png")
+    plot_columns = [col for col in ["loss", "eval_loss"] if col in df.columns]
+    if plot_columns:
+        try:
+            plot_df = df.dropna(subset=plot_columns).set_index(
+                "step" if "step" in df.columns else df.index
+            )
+            plt.figure()
+            plot_df[plot_columns].plot(
+                title="Training/Evaluation Loss", xlabel="Step", ylabel="Loss"
+            )
+            loss_curve_path = os.path.join(
+                args.final_output_dir, "train_loss_curve.png"
+            )
+            plt.savefig(loss_curve_path)
+            plt.close()
+            print(f"Training log and loss curve saved to {args.final_output_dir}")
+        except Exception as e:
+            print(f"Could not plot/save loss curve: {e}")
+
 
 if __name__ == "__main__":
     main()
