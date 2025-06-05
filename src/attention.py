@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 
-from train_coral_lora import (
+from train import (
     DinoV2Coral,
     coral_logits_to_label,
     RESIZE_SIZE,
@@ -114,13 +114,13 @@ def main():
 
     # ---------------- Forward pass with attentions ----------------
     with torch.no_grad():
-        outs = model.base(pixel_values=pixels["pixel_values"], output_attentions=True)
-        logits = model.head(outs.last_hidden_state[:, 0])
+        outs = model.forward(pixels["pixel_values"].cuda(), attention=True)
 
+    logits = outs["logits"]
     pred = coral_logits_to_label(logits)[0].item()
 
     # ---------------- Rollout & visualise ----------------
-    heat = compute_rollout(outs.attentions)
+    heat = compute_rollout(outs["attentions"])
     visualize(img, heat, os.path.join(args.out_dir, "attention_overlay.png"))
 
     with open(os.path.join(args.out_dir, "prediction.txt"), "w") as f:

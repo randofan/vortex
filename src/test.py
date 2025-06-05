@@ -20,7 +20,7 @@ import torch
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 from transformers import default_data_collator
-from train_coral_lora import (
+from train import (
     DinoV2Coral,
     coral_logits_to_label,
     RESIZE_SIZE,

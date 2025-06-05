@@ -43,12 +43,12 @@ from coral_pytorch.dataset import levels_from_labelbatch
 
 # ---------- constants ----------
 NUM_CLASSES = 300
+BASE_YEAR = 1600
 MODEL_NAME = "facebook/dinov2-large"
 SEARCH_MIN_EPOCHS = 1  # epochs per trial during HPO
 FINAL_EPOCHS = 4  # full training epochs after HPO
 EVAL_STEPS = 200  # evaluation interval (steps)
 PRUNER_MIN_STEPS = 500  # first ASHA rung
-BASE_YEAR = 1600 # Base year for relative year calculation
 
 
 # ---------- Model wrapper ----------
@@ -65,14 +65,18 @@ class DinoV2Coral(torch.nn.Module):
         self.head = CoralLayer(hidden, NUM_CLASSES)
         self.criterion = CoralLoss(reduction='mean')
 
-    def forward(self, pixel_values, labels=None):
-        rep = self.base(pixel_values=pixel_values).last_hidden_state[:, 0]
+    def forward(self, pixel_values, labels=None, attention=False):
+        outs = self.base(pixel_values=pixel_values, output_attentions=True)
+        rep = outs.last_hidden_state[:, 0]
         logits = self.head(rep)
+        res = {"logits": logits}
         if labels is not None:
             levels = levels_from_labelbatch(labels, NUM_CLASSES).to(logits.device)
             loss = self.criterion(logits, levels)
-            return {"loss": loss, "logits": logits}
-        return {"logits": logits}
+            res["loss"] = loss
+        if attention:
+            res["attentions"] = outs.attentions
+        return res
 
 
 # ---------- Data pipeline ----------
@@ -115,7 +119,8 @@ def compute_metrics(p):
 
 # ---------- Optuna helpers ----------
 
-best_hparams = {}
+# Initial best hyper-parameters
+best_hparams = {"lora_r": 4, "alpha_mult": 1, "lora_dropout": 0.05}
 
 
 def model_init(trial: optuna.Trial | None = None):
@@ -127,10 +132,10 @@ def model_init(trial: optuna.Trial | None = None):
         r = trial.suggest_categorical("lora_r", [4, 8, 12])
         alpha_m = trial.suggest_categorical("alpha_mult", [1, 2, 4])
         drp = trial.suggest_float("lora_dropout", 0.0, 0.15)
-        best_hparams.update(dict(lora_r=r, alpha_mult=alpha_m, lora_dropout=drp))
     else:
-        hp = {'lora_r': 8, 'alpha_mult': 2, 'lora_dropout': 0.75}
-        r, alpha_m, drp = hp["lora_r"], hp["alpha_mult"], hp["lora_dropout"]
+        r = best_hparams["lora_r"]
+        alpha_m = best_hparams["alpha_mult"]
+        drp = best_hparams["lora_dropout"]
 
     alpha = r * alpha_m
     cfg = LoraConfig(
@@ -209,6 +214,7 @@ def main():
     )
 
     # ---------------- Final training with best hyper‑params ----------------
+    best_hparams.update(best.hyperparameters)
     final_args = base_args
     for k, v in best.hyperparameters.items():
         setattr(final_args, k, v)
@@ -216,10 +222,8 @@ def main():
     final_args.save_strategy = "epoch"
 
     trainer.args = final_args
-    # trainer.create_model()
     trainer.train()
     trainer.save_model()
-    trainer.save_metrics("train", {})
     print("Best trial:", best)
 
 
