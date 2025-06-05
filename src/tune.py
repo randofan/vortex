@@ -1,3 +1,13 @@
+"""
+Usage:
+python tune.py \
+  --train-csv /path/to/train.csv \
+  --val-csv /path/to/val.csv \
+  --hpo-output-dir /path/to/hpo_output \
+  --optuna-trials 60 \
+  --best-params-json /path/to/best_params.json
+"""
+
 import argparse
 import json
 import optuna
@@ -79,6 +89,7 @@ def main():
         "--hpo-output-dir", required=True, help="Dir for Optuna study and trial logs."
     )
     ap.add_argument("--optuna-trials", type=int, default=60)
+    ap.add_argument("--best-params-json", required=True, help="Path to JSON file to write best hyperparameters")
     args = ap.parse_args()
 
     if not processor:  # Check if processor imported from train.py is valid
@@ -131,6 +142,11 @@ def main():
     # AND keys from hp_space_for_trainer_args (bs, lr, wd).
     print(json.dumps(best_trial_results.hyperparameters, indent=4))
     print(f"Best Objective (eval_mae): {best_trial_results.objective}")
+
+    # Write best hyperparameters to JSON file
+    with open(args.best_params_json, 'w') as f:
+        json.dump(best_trial_results.hyperparameters, f, indent=4)
+    print(f"Best hyperparameters saved to {args.best_params_json}")
 
 
 if __name__ == "__main__":

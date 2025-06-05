@@ -1,5 +1,15 @@
+"""
+Usage:
+python train.py \
+  --train-csv /path/to/train.csv \
+  --val-csv /path/to/val.csv \
+  --output-dir /path/to/final_output \
+  --config /path/to/best_params.json
+"""
+
 import os
 import argparse
+import json
 import torch
 from datasets import load_dataset
 from transformers import (
@@ -123,13 +133,12 @@ def main():
     ap.add_argument("--train-csv", required=True)
     ap.add_argument("--val-csv", required=True)
     ap.add_argument("--output-dir", required=True)
-    ap.add_argument("--lora_r", type=int, required=True)
-    ap.add_argument("--alpha_mult", type=int, required=True)
-    ap.add_argument("--lora_dropout", type=float, required=True)
-    ap.add_argument("--bs", type=int, required=True, help="Batch size per device")
-    ap.add_argument("--lr", type=float, required=True, help="Learning rate")
-    ap.add_argument("--wd", type=float, required=True, help="Weight decay")
+    ap.add_argument("--config", required=True, help="Path to JSON config file with hyperparameters")
     args = ap.parse_args()
+
+    # Load hyperparameters from JSON file
+    with open(args.config, 'r') as f:
+        config = json.load(f)
 
     if not processor or not mae_metric:
         print("Error: Processor or MAE metric not initialized. Exiting.")
@@ -139,11 +148,11 @@ def main():
 
     model = DinoV2Coral()
 
-    lora_alpha_value = args.lora_r * args.alpha_mult
+    lora_alpha_value = config['lora_r'] * config['alpha_mult']
     lora_config = LoraConfig(
-        r=args.lora_r,
+        r=config['lora_r'],
         lora_alpha=lora_alpha_value,
-        lora_dropout=args.lora_dropout,
+        lora_dropout=config['lora_dropout'],
         bias="none",
         target_modules=["query", "key", "value", "dense"],
     )
@@ -154,8 +163,10 @@ def main():
         eval_strategy="steps",
         save_strategy="no",
         eval_steps=EVAL_STEPS,
-        per_device_train_batch_size=2,
-        per_device_eval_batch_size=2,
+        per_device_train_batch_size=config['bs'],
+        per_device_eval_batch_size=config['bs'],
+        learning_rate=config['lr'],
+        weight_decay=config['wd'],
         fp16=True,
         logging_steps=EVAL_STEPS,
         metric_for_best_model="mae",
@@ -176,14 +187,14 @@ def main():
     print("Starting final training with specified hyperparameters...")
     trainer.train()
 
-    print(f"Saving best model to {args.final_output_dir}...")
+    print(f"Saving best model to {args.output_dir}...")
     trainer.save_model()
 
     if trainer.state.best_metric:
         print(f"Best eval_mae achieved: {trainer.state.best_metric}")
 
     df = pd.DataFrame(trainer.state.log_history)
-    log_csv_path = os.path.join(args.final_output_dir, "train_log.csv")
+    log_csv_path = os.path.join(args.output_dir, "train_log.csv")
     df.to_csv(log_csv_path, index=False)
 
     plot_columns = [col for col in ["loss", "eval_loss"] if col in df.columns]
@@ -197,11 +208,11 @@ def main():
                 title="Training/Evaluation Loss", xlabel="Step", ylabel="Loss"
             )
             loss_curve_path = os.path.join(
-                args.final_output_dir, "train_loss_curve.png"
+                args.output_dir, "train_loss_curve.png"
             )
             plt.savefig(loss_curve_path)
             plt.close()
-            print(f"Training log and loss curve saved to {args.final_output_dir}")
+            print(f"Training log and loss curve saved to {args.output_dir}")
         except Exception as e:
             print(f"Could not plot/save loss curve: {e}")
 
