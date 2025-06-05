@@ -30,7 +30,7 @@ from train import (
 
 # ---------- HPO-specific Constants ----------
 SEARCH_MIN_EPOCHS = 1  # Epochs per trial during HPO
-PRUNER_MIN_STEPS = 500  # First ASHA rung
+PRUNER_MIN_STEPS = 100  # First ASHA rung
 
 
 # ---------- Optuna Helpers ----------
@@ -39,10 +39,18 @@ def model_init_for_hpo(trial: optuna.Trial):
     Initializes the model for an HPO trial.
     It instantiates DinoV2Coral from train.py and applies LoRA based on trial suggestions.
     """
-    # 1. Sample LoRA hyperparameters
-    r = trial.suggest_categorical("lora_r", [4, 8, 12])
-    alpha_m = trial.suggest_categorical("alpha_mult", [1, 2, 4])
-    drp = trial.suggest_float("lora_dropout", 0.0, 0.15)
+
+    if trial:
+        # 1. Sample LoRA hyperparameters
+        r = trial.suggest_categorical("lora_r", [32, 64, 128, 256])
+        alpha_m = trial.suggest_categorical("alpha_mult", [0.1, 0.5, 1, 2])
+        drp = trial.suggest_float("lora_dropout", 0.0, 0.3)
+    else:
+        # Default values if no trial is provided (e.g., for final training)
+        r = 4
+        alpha_m = 1
+        drp = 0.05
+
     lora_alpha_value = r * alpha_m
 
     # 2. Instantiate the base model (imported from train.py)
@@ -64,10 +72,10 @@ def model_init_for_hpo(trial: optuna.Trial):
 def hp_space_for_trainer_args(trial: optuna.Trial):
     """Defines the hyperparameter search space for TrainingArguments during HPO."""
     return {
-        "per_device_train_batch_size": trial.suggest_categorical("bs", [1, 2]),
-        "learning_rate": trial.suggest_float("lr", 1e-5, 1e-4, log=True),
+        "per_device_train_batch_size": 4,
+        "learning_rate": trial.suggest_float("lr", 1e-4, 1e-3, log=True),
         "num_train_epochs": SEARCH_MIN_EPOCHS,  # Fixed for HPO trials
-        "weight_decay": trial.suggest_float("wd", 1e-5, 1e-2, log=True),
+        "weight_decay": trial.suggest_float("wd", 1e-5, 1e-1, log=True),
     }
 
 

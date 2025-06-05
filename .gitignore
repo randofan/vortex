@@ -18,3 +18,7 @@ base-joconde-extrait.csv
 images
 lightning_logs
 output
+outputs
+outputs2
+__pycache__
+myenv

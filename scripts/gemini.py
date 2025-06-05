@@ -27,8 +27,8 @@ Format you response as:
         rows = list(reader)
 
     # Rate limiter: 2000 requests per minute = ~33.33 requests per second
-    semaphore = asyncio.Semaphore(100)  # Limit concurrent requests
-    rate_limit = 2000 / 60  # requests per second
+    semaphore = asyncio.Semaphore(10)  # Limit concurrent requests
+    rate_limit = 25  # requests per second
 
     async def process_single_image(row, index):
         async with semaphore:
@@ -36,9 +36,9 @@ Format you response as:
             if index > 0:
                 await asyncio.sleep(1 / rate_limit)
 
-            image_path = row["path"]
+            image_path = f"/home/davsong/vortex/data/{row['path']}"
             actual_year = row["year"]
-            print(f"Processing {image_path} with actual year {actual_year}")
+            # print(f"Processing {image_path} with actual year {actual_year}")
 
             try:
                 # Read image file asynchronously
@@ -64,7 +64,7 @@ Format you response as:
                 response_text = response.text
                 prediction, reasoning = extract_prediction_and_reasoning(response_text)
 
-                print(f"Processed {image_path}: {actual_year} -> {prediction}")
+                # print(f"Processed {image_path}: {actual_year} -> {prediction}")
                 return prediction, reasoning
 
             except Exception as e:
