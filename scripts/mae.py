@@ -41,6 +41,7 @@ def plot_violin(df: pd.DataFrame, output: Path):
         return
 
     plt.figure(figsize=(8, 4) if has_pred2 else (6, 4))
+    plt.rcParams.update({"font.size": 18})
 
     # Prepare data
     error_data1 = df["abs_error"].dropna().values
@@ -143,6 +144,7 @@ def plot_scatter(df: pd.DataFrame, output: Path):
     has_pred2 = "abs_error2" in df.columns
 
     plt.figure(figsize=(10, 6))
+    plt.rcParams.update({"font.size": 18})
     plt.scatter(
         df["year_true"],
         df["abs_error"],
@@ -175,6 +177,73 @@ def plot_scatter(df: pd.DataFrame, output: Path):
     print(f"Saved scatter plot ➜ {output}")
 
 
+def print_worst_predictions(df: pd.DataFrame):
+    """Print the paths of the worst and best performing predictions for each model."""
+    # Find worst prediction for Gemini 2.0 Flash
+    worst_gemini_idx = df["abs_error"].idxmax()
+    worst_gemini_error = df.loc[worst_gemini_idx, "abs_error"]
+    worst_gemini_path = (
+        df.loc[worst_gemini_idx, "path"]
+        if "path" in df.columns
+        else f"Row {worst_gemini_idx}"
+    )
+
+    print("\nWorst Gemini 2.0 Flash prediction:")
+    print(f"  Path: {worst_gemini_path}")
+    print(f"  Error: {worst_gemini_error:.2f} years")
+    print(f"  True year: {df.loc[worst_gemini_idx, 'year_true']}")
+    print(f"  Predicted year: {df.loc[worst_gemini_idx, 'year_pred']}")
+    if "reasoning" in df.columns:
+        print(f"  Reasoning: {df.loc[worst_gemini_idx, 'reasoning']}")
+
+    # Find best prediction for Gemini 2.0 Flash
+    best_gemini_idx = df["abs_error"].idxmin()
+    best_gemini_error = df.loc[best_gemini_idx, "abs_error"]
+    best_gemini_path = (
+        df.loc[best_gemini_idx, "path"]
+        if "path" in df.columns
+        else f"Row {best_gemini_idx}"
+    )
+
+    print("\nBest Gemini 2.0 Flash prediction:")
+    print(f"  Path: {best_gemini_path}")
+    print(f"  Error: {best_gemini_error:.2f} years")
+    print(f"  True year: {df.loc[best_gemini_idx, 'year_true']}")
+    print(f"  Predicted year: {df.loc[best_gemini_idx, 'year_pred']}")
+    if "reasoning" in df.columns:
+        print(f"  Reasoning: {df.loc[best_gemini_idx, 'reasoning']}")
+
+    # Find worst and best predictions for Vortex if available
+    if "abs_error2" in df.columns:
+        worst_vortex_idx = df["abs_error2"].idxmax()
+        worst_vortex_error = df.loc[worst_vortex_idx, "abs_error2"]
+        worst_vortex_path = (
+            df.loc[worst_vortex_idx, "path"]
+            if "path" in df.columns
+            else f"Row {worst_vortex_idx}"
+        )
+
+        print("\nWorst Vortex prediction:")
+        print(f"  Path: {worst_vortex_path}")
+        print(f"  Error: {worst_vortex_error:.2f} years")
+        print(f"  True year: {df.loc[worst_vortex_idx, 'year_true']}")
+        print(f"  Predicted year: {df.loc[worst_vortex_idx, 'y_pred2']}")
+
+        best_vortex_idx = df["abs_error2"].idxmin()
+        best_vortex_error = df.loc[best_vortex_idx, "abs_error2"]
+        best_vortex_path = (
+            df.loc[best_vortex_idx, "path"]
+            if "path" in df.columns
+            else f"Row {best_vortex_idx}"
+        )
+
+        print("\nBest Vortex prediction:")
+        print(f"  Path: {best_vortex_path}")
+        print(f"  Error: {best_vortex_error:.2f} years")
+        print(f"  True year: {df.loc[best_vortex_idx, 'year_true']}")
+        print(f"  Predicted year: {df.loc[best_vortex_idx, 'y_pred2']}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Plot painting-date prediction errors")
     parser.add_argument("--true", required=True, help="CSV with columns: path, year")
@@ -195,11 +264,42 @@ def main():
     mae = merged["abs_error"].mean()
     print(f"Mean Absolute Error (MAE) Gemini 2.0 Flash: {mae:.2f} years")
 
+    # Count exact predictions (0 error) for Gemini
+    exact_gemini = (merged["abs_error"] == 0).sum()
+    total_predictions = len(merged)
+    exact_gemini_pct = (exact_gemini / total_predictions) * 100
+    print(
+        f"Exact predictions Gemini 2.0 Flash: {exact_gemini}/{total_predictions} ({exact_gemini_pct:.1f}%)"
+    )
+
+    # Count predictions within ±5 years for Gemini
+    within_5_gemini = (merged["abs_error"] <= 5).sum()
+    within_5_gemini_pct = (within_5_gemini / total_predictions) * 100
+    print(
+        f"Predictions within ±5 years Gemini 2.0 Flash: {within_5_gemini}/{total_predictions} ({within_5_gemini_pct:.1f}%)"
+    )
+
     if "abs_error2" in merged.columns:
         mae2 = merged["abs_error2"].mean()
         print(f"Mean Absolute Error (MAE) Vortex: {mae2:.2f} years")
 
+        # Count exact predictions (0 error) for Vortex
+        exact_vortex = (merged["abs_error2"] == 0).sum()
+        exact_vortex_pct = (exact_vortex / total_predictions) * 100
+        print(
+            f"Exact predictions Vortex: {exact_vortex}/{total_predictions} ({exact_vortex_pct:.1f}%)"
+        )
+
+        # Count predictions within ±5 years for Vortex
+        within_5_vortex = (merged["abs_error2"] <= 5).sum()
+        within_5_vortex_pct = (within_5_vortex / total_predictions) * 100
+        print(
+            f"Predictions within ±5 years Vortex: {within_5_vortex}/{total_predictions} ({within_5_vortex_pct:.1f}%)"
+        )
+
     print(f"Merged CSV saved ➜ {args.out}")
+
+    print_worst_predictions(merged)
 
     plot_violin(merged, Path("abs_error_violin.png"))
     plot_scatter(merged, Path("abs_error_by_year.png"))
