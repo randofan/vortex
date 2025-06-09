@@ -73,33 +73,35 @@ This research presents VORTEX (Vision Ordinal Regression Temporal EXtraction), c
 
 \section{Introduction}
 
-The precise temporal placement of artworks represents a fundamental challenge in art history scholarship \cite{Mishory00}. Accurate dating influences virtually every aspect of research, from understanding individual artistic development to tracing the evolution of broader cultural movements \cite{Elgammal18}. When researchers can confidently assign specific creation years to paintings, they unlock insights into how artistic innovations emerged, spread across geographic boundaries, and influenced subsequent generations of artists.
+The precise temporal placement of artworks represents a fundamental challenge in art history scholarship \cite{Mishory00}. Accurate dating influences virtually every aspect of research, from understanding individual artistic development to tracing the evolution of broader cultural movements \cite{Elgammal18}. 
+% When researchers can confidently assign specific creation years to paintings, they unlock insights into how artistic innovations emerged, spread across geographic boundaries, and influenced subsequent generations of artists.
 
-Despite centuries of scholarly effort and recent museum digitization initiatives, a substantial portion of the world's artistic heritage remains imprecisely dated. Major cultural institutions continue to struggle with temporal attribution, often cataloging significant works with vague temporal ranges such as ``first half of the 19th century'' rather than specific years.\footnote{See, for example, \url{https://collections.louvre.fr/en/ark:/53355/cl010064491}.} This imprecision creates cascading challenges for digital humanities research, hampering quantitative analyses of stylistic evolution and limiting our ability to understand chronological relationships between artworks.
+Despite centuries of scholarly effort and recent museum digitization initiatives, a substantial portion of the world's artistic heritage remains imprecisely dated. Major cultural institutions continue to struggle with temporal attribution, often cataloging significant works with vague temporal ranges such as ``first half of the 19th century'' rather than specific years.\footnote{See, for example, \url{https://collections.louvre.fr/en/ark:/53355/cl010064491}.} This imprecision creates challenges for digital humanities research, limiting our ability to understand chronological relationships between artworks.
 
 \subsection{Current Challenges in Art Historical Dating}
 
-Traditional dating methods each have inherent limitations. Connoisseurship remains subjective and often contentious among experts. Documentary evidence frequently proves incomplete or ambiguous. Scientific analysis techniques require significant resources and often yield broad date ranges. Moreover, curators must invest substantial manual effort to narrow broad time ranges into single years—a process that remains labor-intensive and difficult to scale.
+Traditional dating methods each have inherent limitations. Connoisseurship remains subjective and often contentious among experts. Scientific analysis techniques require significant resources and often yield broad date ranges. Moreover, curators must invest substantial manual effort to narrow broad time ranges into single years—a process that is labor-intensive and difficult to scale.
 
-While computational methods offer potential to augment traditional approaches, previous efforts have primarily focused on related problems such as style classification and artist attribution, not directly addressing precise temporal dating with the interpretability necessary for scholarly acceptance.
+While computational methods offer potential to augment traditional approaches, previous efforts have primarily focused on related problems such as style classification and artist attribution, not directly addressing precise temporal dating.
+%with the interpretability necessary for scholarly acceptance.
 
 \subsection{Objectives and Technical Approach}
 
-We introduce VORTEX (Vision Ordinal Regression Temporal EXtraction) to address the unique challenges of exact year prediction for historical paintings. Our approach targets Western European paintings from 1600 to 1899, encompassing major artistic movements from Baroque through early Impressionism. We formulate three core objectives:
+We introduce \textbf{VORTEX} (\textbf{V}ision \textbf{O}rdinal \textbf{R}egression \textbf{T}emporal \textbf{EX}traction) to address the unique challenges of exact year prediction for historical paintings. Our approach targets Western European paintings from 1600 to 1899, encompassing major artistic movements from Baroque through early Impressionism. We formulate two core objectives:
 
 \begin{enumerate}[leftmargin=1.2em,label=(\arabic*)]
     \item \textbf{Precise temporal prediction}: Develop a model capable of predicting exact creation years with mean absolute errors suitable for practical curatorial applications.
 
-    \item \textbf{Interpretable decision-making}: Implement attention-based visualization techniques that reveal which visual elements inform temporal predictions, providing art historians with evaluable evidence.
+    \item \textbf{Interpretable decision-making}: Implement attention-based visualization techniques that reveal which visual elements inform temporal predictions, providing art historians with understandable evidence.
 \end{enumerate}
 
 To achieve these objectives, we leverage DINOv2 as our backbone, implement LoRA for parameter-efficient fine-tuning, and formulate year prediction as an ordinal classification problem using CORAL.
 
-\subsection{Expected Impact}
+% \subsection{Expected Impact}
 
-From a technical perspective, we demonstrate that fine-tuning smaller open-weight pre-trained models can rival the performance of large SOTA multimodal language models for domain-specific computer vision tasks. This suggests that specialized architectures with efficient adaptation methods can achieve competitive results without requiring massive computational resources.
+% From a technical perspective, we demonstrate that fine-tuning smaller open-weight pre-trained models can rival the performance of large SOTA multimodal language models for domain-specific computer vision tasks. This suggests that specialized architectures with efficient adaptation methods can achieve competitive results without requiring massive computational resources.
 
-From an art historical perspective, our emphasis on interpretability through attention analysis provides a crucial bridge between computational predictions and scholarly practices. By visualizing which visual elements inform temporal decisions, we enable art historians to evaluate model predictions against their domain expertise, building trust in computational methods within the humanities.
+% From an art historical perspective, our emphasis on interpretability through attention analysis provides a crucial bridge between computational predictions and scholarly practices. By visualizing which visual elements inform temporal decisions, we enable art historians to evaluate model predictions against their domain expertise, building trust in computational methods within the humanities.
 
 \section{Related Work}
 
@@ -109,7 +111,7 @@ The application of computer vision techniques to art historical problems has evo
 
 Early approaches utilized hand-crafted features like SIFT and HOG for style classification and artist identification \cite{Karayev14}. The introduction of CNNs marked a significant paradigm shift, with Karayev et al. demonstrating that deep features from AlexNet could effectively recognize artistic styles. This led to sophisticated frameworks like OmniArt \cite{Strezoski17OmniArt, Strezoski18}, which advanced multi-task learning for analyzing multiple artistic attributes including period classification.
 
-The recent emergence of Vision Transformers represents the latest evolution. These architectures offer advantages through global self-attention mechanisms that capture long-range dependencies in visual data. DINOv2 models \cite{Oquab23}, trained through self-supervised learning on massive visual datasets, have demonstrated exceptional transfer capabilities suitable for specialized domains with scarce annotated examples.
+The recent emergence of Vision Transformers offer advantages through global self-attention mechanisms that capture long-range dependencies in visual data. DINOv2 models \cite{Oquab23}, trained through self-supervised learning on massive visual datasets, have demonstrated exceptional transfer capabilities suitable for specialized domains with scarce annotated examples.
 
 \subsection{Temporal Analysis in Art History Datasets}
 
@@ -123,54 +125,18 @@ The lack of existing benchmarks specifically designed for precise year-level dat
 
 Unlike broader art analysis tasks that have established benchmarks, temporal dating at scholarly precision levels represents an underexplored research direction with no dedicated evaluation frameworks. To address this gap, we systematically aggregated and standardized paintings from multiple authoritative sources to construct a novel dataset suitable for machine learning applications.
 
-\begin{figure*}[t]
-    \centering
-    \begin{subfigure}[t]{\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{images/Distribution of Western Paintings in all Datasets by Year (1600-1899) all decades big.png}
-        \caption{Distribution of Western Paintings Collected Across all Datasets by Decade (1600-1900)}
-        \label{fig:subfig-a}
-    \end{subfigure}
-    
-    \begin{subfigure}[t]{0.3\textwidth}
-        \includegraphics[width=\linewidth]{images/WikiArt_s Style pie chart big.png}
-        \caption{WikiArt 'Style' Pie Chart}
-        \label{fig:subfig-b}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[t]{0.3\textwidth}
-        \includegraphics[width=\linewidth]{images/WGA_s SCHOOL pie chart big.png}
-        \caption{WGA 'School' Pie Chart}
-        \label{fig:subfig-c}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[t]{0.3\textwidth}
-        \includegraphics[width=\linewidth]{images/Joconde's Ecole_pays pie chart big.png}
-        \caption{Joconde 'Ecode/Pays' Pie Chart}
-        \label{fig:subfig-d}
-    \end{subfigure}
 
-    \begin{subfigure}[t]{\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{images/all datasets example imgs better.png}
-        \caption{Example Images Collected Over Multiple Years}
-        \label{fig:subfig-e}
-    \end{subfigure}
-
-    \caption{(a) This shows the amount of images we have collected over all datasets per decade between 1600 and 1900. Also displays the mean year (~1801) and the median year (~1837) (b) Shows the 'style' classification of the images collected from WikiArt. The pie chart was created only considering images from WikiArt that fit our temporal and geographical filters. (c) Shows the 'school' classification of all images collected from WGA (d) Shows the school/country classification of all images collected from Joconde. and (e) An example of a few images collected in our dataset across the years. The year displayed is the year the painting was created or the median year if there was a range of $<10$. You can clearly see a shift in style and subjects in these images as centuries pass.}
-    \label{fig:combined-figure}
-\end{figure*}
 
 \subsection{Source Aggregation}
 
-To construct our dataset, we carefully evaluated prior work to identify sources that meet our research requirements. We aggregated paintings from four major collections, as shown in Table \ref{tab:dataset_comparison}.
+To construct our dataset, we carefully evaluated prior work to identify sources that meet our research requirements. We aggregated paintings from four major collections, as shown in Table \ref{tab:dataset_comparison}. Appendix \ref{fig:subfig-a} contains a further granular breakdown of the dataset.
 
-\begin{enumerate}[leftmargin=1.2em,label=(\arabic*)]
-    \item The Joconde database provides metadata for French museum artworks \cite{JocondeTerms}.
-    \item WikiArt offers a user-curated collection across multiple movements \cite{WikiArtTerms}. 
-    \item The Web Gallery of Art focuses on European paintings from Renaissance through 19th century \cite{WGATerms}.
-    \item The Rijksmuseum collection contains Dutch and Flemish paintings \cite{Mensink14}.
-\end{enumerate}
+% \begin{enumerate}[leftmargin=1.2em,label=(\arabic*)]
+%     \item The Joconde database provides metadata for French museum artworks \cite{JocondeTerms}.
+%     \item WikiArt offers a user-curated collection across multiple movements \cite{WikiArtTerms}. 
+%     \item The Web Gallery of Art focuses on European paintings from Renaissance through 19th century \cite{WGATerms}.
+%     \item The Rijksmuseum collection contains Dutch and Flemish paintings \cite{Mensink14}.
+% \end{enumerate}
 
 \begin{table*}[ht]
 \centering
@@ -178,7 +144,7 @@ To construct our dataset, we carefully evaluated prior work to identify sources 
 \label{tab:dataset_comparison}
 \begin{tabular}{lccccc}
 \toprule
-\textbf{Feature \ Dataset} & \textbf{Wiki Art} & \textbf{WGA} & \textbf{Joconde} & \textbf{Rijks} & \textbf{\underline{All Datasets}}\\
+\textbf{Feature \ Dataset} & \textbf{Wiki Art}\cite{WikiArtTerms} & \textbf{WGA}\cite{WGATerms} & \textbf{Joconde}\cite{JocondeTerms} & \textbf{Rijks}\cite{Mensink14} & \textbf{\underline{All Datasets}}\\
 \midrule
 Number of Artworks           &       28997        &         10000      &       11954        &    1506     & 50781      \\
 Publicly Available           &     \checkmark          &          \checkmark     &        \checkmark       &      \checkmark  & \checkmark       \\
@@ -202,7 +168,7 @@ This multi-source approach mitigates collection biases inherent in any single in
     \item Each work must include a digitized image
     \item Each work must possess either an exact year annotation or a date range with uncertainty less than 10 years
 \end{itemize}
-We exclude drawings, prints, sculptures, and decorative arts to maintain focus on painted works where temporal stylistic evolution follows consistent patterns.
+We exclude drawings, prints, sculptures, and decorative arts to maintain focus on painted works where temporal stylistic evolution follows consistent patterns. See Appendix \ref{fig:subfig-e} for example images from the dataset.
 
 \paragraph{Label Standardization} Our standardization process addresses the variety of dating conventions found in art historical documentation. We accept paintings with exact year labels directly. For paintings with date ranges under 10 years (e.g., "1650-1655"), we use the midpoint as the exact year. Works with dating uncertainty exceeding 10 years are excluded to maintain precision in our ground truth labels.
 
@@ -322,7 +288,7 @@ In cases of perfect prediction, both models demonstrated sophisticated analytica
 \end{quote}
 This shows an ability to synthesize style, subject, and technical details to pinpoint a work in time.
 
-VORTEX also achieved a perfect prediction on an 1899 portrait (Figure~\ref{fig:predictions}). The attention map reveals its strategy: it focused intensely on high-information regions, particularly the subject's stiff white cuffs and head. The model learned to correlate the painting style and fashion of the era with the late 19th century. This painting's visual cues were all stylistically consistent with its creation year, allowing the model to make a precise attribution.
+VORTEX also achieved a perfect prediction on an 1889 portrait (Figure~\ref{fig:predictions}). The attention map reveals its strategy: it focused intensely on high-information regions, particularly the subject's stiff white cuffs and head. The model learned to correlate the painting style and fashion of the era with the late 19th century. This painting's visual cues were all stylistically consistent with its creation year, allowing the model to make a precise attribution.
 
 This analysis demonstrates that although both models achieve similar MAEs, their underlying reasoning differs. Gemini leverages a broad, context-aware understanding, while VORTEX excels at correlating specific, learned visual features with time.
 % Both approaches achieve comparable accuracy, yet both are vulnerable to stylistically complex artworks, highlighting the profound difficulty of this task.
@@ -346,7 +312,7 @@ VORTEX's worst prediction, an error of \textbf{278 years} (dating an 1898 painti
 \begin{tabular}{cc}
     \includegraphics[width=0.45\linewidth]{images/best_vortex.jpg} &
     \includegraphics[width=0.4\linewidth]{images/best_gemini.jpg} \\
-    \makecell{\textbf{VORTEX}\\ (0 year error)} & \makecell{\textbf{Gemini Flash 2.0}\\ (0 year error)} \\
+    \makecell{\textbf{VORTEX}\\ (0 year error) \\ Ground Truth: 1889} & \makecell{\textbf{Gemini Flash 2.0}\\ (0 year error) \\ Ground Truth: 1892} \\
 \end{tabular}
 
 \vspace{0.5em}
@@ -367,7 +333,7 @@ VORTEX's worst prediction, an error of \textbf{278 years} (dating an 1898 painti
 \begin{tabular}{cc}
     \includegraphics[width=0.5\linewidth]{images/worst_vortex.jpg} &
     \includegraphics[width=0.35\linewidth]{images/worst_gemini.jpg} \\
-    \makecell{\textbf{VORTEX}\\ (290 yrs error)} & \makecell{\textbf{Gemini Flash 2.0} \\ (441 yrs error)} \\
+    \makecell{\textbf{VORTEX}\\ (290 yrs error)\\ Ground Truth: 1898} & \makecell{\textbf{Gemini Flash 2.0} \\ (441 yrs error)\\ Ground Truth: 1861} \\
 \end{tabular}
 
 \vspace{0.5em}
@@ -393,7 +359,9 @@ Our experimental evaluation reveals both the promise and limitations of computat
 
 \subsection{Implications for Art History Scholarship}
 
-The performance and failure modes of both VORTEX and Gemini 2.0 Flash demonstrate that these AI tools cannot replace expert scholarship but serve as powerful supplementary instruments. For curatorial applications, VORTEX provides immediate practical value by rapidly suggesting temporal attributions for new acquisitions and offering independent evidence for disputed dates. The attention visualizations provide interpretable evidence that curators can evaluate against their expertise, building trust through transparency.
+The performance and failure modes of both VORTEX and Gemini 2.0 Flash demonstrate that these AI tools cannot replace expert scholarship but serve as powerful supplementary instruments. 
+% For curatorial applications, VORTEX provides immediate practical value by rapidly suggesting temporal attributions for new acquisitions and offering independent evidence for disputed dates.
+The attention visualizations provide interpretable evidence that curators can evaluate against their expertise, building trust through transparency.
 
 The ability to process entire collections enables new forms of temporal analysis at computational scale, allowing researchers to analyze trends across thousands of paintings, identify periods of rapid stylistic innovation, and discover unrecognized temporal patterns. This opens new methodological possibilities for quantitative art history.
 
@@ -421,4 +389,47 @@ Future development should address expanding temporal and geographic scope, bench
 \bibliographystyle{ieee_fullname}
 \bibliography{egbib}
 }
+
+\newpage
+
+
+\begin{figure*}[t]
+\section*{Appendix}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Distribution of Western Paintings in all Datasets by Year (1600-1899) all decades big.png}
+        \caption{Distribution of Western Paintings Collected Across all Datasets by Decade (1600-1900)}
+        \label{fig:subfig-a}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.3\textwidth}
+        \includegraphics[width=\linewidth]{images/WikiArt_s Style pie chart big.png}
+        \caption{WikiArt 'Style' Pie Chart}
+        \label{fig:subfig-b}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.3\textwidth}
+        \includegraphics[width=\linewidth]{images/WGA_s SCHOOL pie chart big.png}
+        \caption{WGA 'School' Pie Chart}
+        \label{fig:subfig-c}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.3\textwidth}
+        \includegraphics[width=\linewidth]{images/Joconde's Ecole_pays pie chart big.png}
+        \caption{Joconde 'Ecode/Pays' Pie Chart}
+        \label{fig:subfig-d}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/all datasets example imgs better.png}
+        \caption{Example Images Collected Over Multiple Years}
+        \label{fig:subfig-e}
+    \end{subfigure}
+
+    \caption{(a) This shows the amount of images we have collected over all datasets per decade between 1600 and 1900. Also displays the mean year (~1801) and the median year (~1837) (b) Shows the 'style' classification of the images collected from WikiArt. The pie chart was created only considering images from WikiArt that fit our temporal and geographical filters. (c) Shows the 'school' classification of all images collected from WGA (d) Shows the school/country classification of all images collected from Joconde. and (e) An example of a few images collected in our dataset across the years. The year displayed is the year the painting was created or the median year if there was a range of $<10$. You can clearly see a shift in style and subjects in these images as centuries pass.}
+    \label{fig:combined-figure}
+\end{figure*}
+
 \end{document}
